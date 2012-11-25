@@ -912,7 +912,7 @@ window.require.define({"views/home_page_view": function(exports, require, module
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  template = require('views/templates/home');
+  template = require('views/templates/home_page');
 
   PageView = require('views/base/page_view');
 
@@ -1081,13 +1081,13 @@ window.require.define({"views/templates/header": function(exports, require, modu
     return buffer;});
 }});
 
-window.require.define({"views/templates/home": function(exports, require, module) {
+window.require.define({"views/templates/home_page": function(exports, require, module) {
   module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
     helpers = helpers || Handlebars.helpers;
     var foundHelper, self=this;
 
 
-    return "<a href=\"http://brunch.io/\">\n  <img src=\"http://brunch.io/images/brunch.png\" alt=\"Brunch\" />\n</a>\n";});
+    return "<div class=\"hero-unit\">\n  <h1>Cognitive Science. Through Smartphones.</h1>\n  <p>Ever thought you cognitive science experiments had a strong selection bias? Ever wanted to increase <em>N</em> above 50 or 100? Ever thought those experiments could be better fun? Dreamed about <em>in vivo</em> instead of <em>in vitro</em>?</p>\n  <p><a href=\"#\">Brainydroid</a> and <a href=\"#\">Naja</a> let you program awesome experiments for Android and collect humongous amounts of <em>in vivo</em> data.</p>\n  <p><a class=\"btn btn-primary btn-large\">Learn more &raquo;</a></p>\n</div>\n\n<div class=\"row\">\n  <div class=\"span4\">\n    <h2>In vivo</h2>\n    <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>\n    <p><a class=\"btn\" href=\"#\">View details &raquo;</a></p>\n  </div>\n\n  <div class=\"span4\">\n    <h2>Huge user base</h2>\n    <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>\n    <p><a class=\"btn\" href=\"#\">View details &raquo;</a></p>\n  </div>\n\n  <div class=\"span4\">\n    <h2>Clinical use</h2>\n    <p>Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>\n    <p><a class=\"btn\" href=\"#\">View details &raquo;</a></p>\n  </div>\n</div>\n";});
 }});
 
 window.require.define({"views/templates/login": function(exports, require, module) {
