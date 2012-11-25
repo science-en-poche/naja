@@ -133,6 +133,23 @@ window.require.define({"application": function(exports, require, module) {
   
 }});
 
+window.require.define({"config": function(exports, require, module) {
+  var config, production;
+
+  config = {
+    api: {}
+  };
+
+  production = false;
+
+  config.api.root = production ? 'http://api.naja.org' : 'http://dev.naja.org:3000';
+
+  config.api.versionRoot = config.api.root + '/v1';
+
+  module.exports = config;
+  
+}});
+
 window.require.define({"controllers/base/controller": function(exports, require, module) {
   var Chaplin, Controller,
     __hasProp = {}.hasOwnProperty,
@@ -603,7 +620,9 @@ window.require.define({"lib/utils": function(exports, require, module) {
 }});
 
 window.require.define({"lib/view_helper": function(exports, require, module) {
-  var mediator, utils;
+  var config, mediator, utils;
+
+  config = require('config');
 
   mediator = require('mediator');
 
@@ -630,6 +649,12 @@ window.require.define({"lib/view_helper": function(exports, require, module) {
     inverse = options.inverse;
     options.inverse = options.fn;
     options.fn = inverse;
+    return Handlebars.helpers["with"].call(this, context, options);
+  });
+
+  Handlebars.registerHelper('with_config', function(options) {
+    var context;
+    context = config;
     return Handlebars.helpers["with"].call(this, context, options);
   });
 
@@ -1009,34 +1034,51 @@ window.require.define({"views/login_view": function(exports, require, module) {
 window.require.define({"views/templates/header": function(exports, require, module) {
   module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
     helpers = helpers || Handlebars.helpers;
-    var stack1, stack2, foundHelper, tmp1, self=this, functionType="function", helperMissing=helpers.helperMissing, undef=void 0, escapeExpression=this.escapeExpression;
+    var buffer = "", stack1, foundHelper, tmp1, self=this, functionType="function", helperMissing=helpers.helperMissing, undef=void 0, escapeExpression=this.escapeExpression, blockHelperMissing=helpers.blockHelperMissing;
 
   function program1(depth0,data) {
     
     var buffer = "", stack1;
-    buffer += "\n  <a class=\"header-link\" href=\"";
-    foundHelper = helpers.href;
-    stack1 = foundHelper || depth0.href;
+    buffer += "\n\n          <div class=\"btn-group pull-right\">\n            <a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">\n              <i class=\"icon-user\"></i> ";
+    foundHelper = helpers.login;
+    stack1 = foundHelper || depth0.login;
     if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
-    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "href", { hash: {} }); }
-    buffer += escapeExpression(stack1) + "\">";
-    foundHelper = helpers.title;
-    stack1 = foundHelper || depth0.title;
-    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
-    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "title", { hash: {} }); }
-    buffer += escapeExpression(stack1) + "</a>\n";
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "login", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "\n              <span class=\"caret\"></span>\n            </a>\n            <ul class=\"dropdown-menu\">\n              <li><a href=\"#\">Settings</a></li>\n              <li class=\"divider\"></li>\n              <li><a href=\"#\">Sign Out</a></li>\n            </ul>\n          </div>\n          <a class=\"btn pull-right\" href=\"#\"><i class=\"icon-home\"></i> Home</a>\n\n      ";
     return buffer;}
 
-    foundHelper = helpers.items;
-    stack1 = foundHelper || depth0.items;
-    stack2 = helpers.each;
-    tmp1 = self.program(1, program1, data);
+  function program3(depth0,data) {
+    
+    var buffer = "", stack1;
+    buffer += "\n        ";
+    foundHelper = helpers.with_config;
+    stack1 = foundHelper || depth0.with_config;
+    tmp1 = self.program(4, program4, data);
     tmp1.hash = {};
     tmp1.fn = tmp1;
     tmp1.inverse = self.noop;
-    stack1 = stack2.call(depth0, stack1, tmp1);
-    if(stack1 || stack1 === 0) { return stack1; }
-    else { return ''; }});
+    if(foundHelper && typeof stack1 === functionType) { stack1 = stack1.call(depth0, tmp1); }
+    else { stack1 = blockHelperMissing.call(depth0, stack1, tmp1); }
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += "\n      ";
+    return buffer;}
+  function program4(depth0,data) {
+    
+    
+    return "\n\n          <a class=\"btn btn-primary pull-right\" href=\"#\">Log in with BrowserID</a>\n\n        ";}
+
+    buffer += "<div class=\"navbar navbar-inverse navbar-fixed-top\">\n  <div class=\"navbar-inner\">\n    <div class=\"container\">\n\n      <a class=\"btn btn-navbar\" data-toggle=\"collapse\" data-target=\".nav-collapse\">\n        <span class=\"icon-bar\"></span>\n        <span class=\"icon-bar\"></span>\n        <span class=\"icon-bar\"></span>\n      </a>\n\n      <a class=\"brand\" href=\"#\">Naja</a>\n\n      ";
+    foundHelper = helpers.if_logged_in;
+    stack1 = foundHelper || depth0.if_logged_in;
+    tmp1 = self.program(1, program1, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.program(3, program3, data);
+    if(foundHelper && typeof stack1 === functionType) { stack1 = stack1.call(depth0, tmp1); }
+    else { stack1 = blockHelperMissing.call(depth0, stack1, tmp1); }
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += "\n\n      <div class=\"nav-collapse collapse\">\n        <ul class=\"nav\">\n          <li class=\"active\"><a href=\"#\">Home</a></li>\n          <li><a href=\"#\">About</a></li>\n          <li><a href=\"#\">Contact</a></li>\n        </ul>\n      </div>\n\n    </div>\n  </div>\n</div>\n";
+    return buffer;});
 }});
 
 window.require.define({"views/templates/home": function(exports, require, module) {

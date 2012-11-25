@@ -1,3 +1,46 @@
-{{#each items}}
-  <a class="header-link" href="{{href}}">{{title}}</a>
-{{/each}}
+<div class="navbar navbar-inverse navbar-fixed-top">
+  <div class="navbar-inner">
+    <div class="container">
+
+      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </a>
+
+      <a class="brand" href="#">Naja</a>
+
+      {{#if_logged_in}}
+
+          <div class="btn-group pull-right">
+            <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+              <i class="icon-user"></i> {{login}}
+              <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+              <li><a href="#">Settings</a></li>
+              <li class="divider"></li>
+              <li><a href="#">Sign Out</a></li>
+            </ul>
+          </div>
+          <a class="btn pull-right" href="#"><i class="icon-home"></i> Home</a>
+
+      {{else}}
+        {{#with_config}}
+
+          <a class="btn btn-primary pull-right" href="#">Log in with BrowserID</a>
+
+        {{/with_config}}
+      {{/if_logged_in}}
+
+      <div class="nav-collapse collapse">
+        <ul class="nav">
+          <li class="active"><a href="#">Home</a></li>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</div>
