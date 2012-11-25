@@ -99,7 +99,7 @@ window.require.define({"application": function(exports, require, module) {
       return Application.__super__.constructor.apply(this, arguments);
     }
 
-    Application.prototype.title = 'Brunch example application';
+    Application.prototype.title = 'Naja';
 
     Application.prototype.initialize = function() {
       Application.__super__.initialize.apply(this, arguments);
@@ -142,7 +142,7 @@ window.require.define({"config": function(exports, require, module) {
 
   production = false;
 
-  config.api.root = production ? 'http://api.naja.org' : 'http://dev.naja.org:3000';
+  config.api.root = production ? 'http://api.naja.io' : 'http://dev.naja.io.:3000';
 
   config.api.versionRoot = config.api.root + '/v1';
 
