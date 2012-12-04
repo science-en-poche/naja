@@ -1,9 +1,9 @@
 {
-  "author": "Your Name",
-  "name": "package-name",
-  "description": "Package description",
+  "author": "Sébastien Lerique",
+  "name": "naja",
+  "description": "Client-side app for Naja.cc",
   "version": "0.0.1",
-  "homepage": "",
+  "homepage": "http://naja.cc",
   "repository": {
     "type": "git",
     "url": ""

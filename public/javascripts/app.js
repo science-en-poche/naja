@@ -142,7 +142,7 @@ window.require.define({"config": function(exports, require, module) {
 
   production = false;
 
-  config.api.root = production ? 'http://api.naja.io' : 'http://dev.naja.io.:3000';
+  config.api.root = production ? 'http://api.naja.cc' : 'http://dev.naja.cc:3000';
 
   config.api.versionRoot = config.api.root + '/v1';
 
