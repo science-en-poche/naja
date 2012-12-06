@@ -5,7 +5,7 @@ production = no
 config.api.root = if production
   'http://api.naja.cc'
 else
-  'http://dev.naja.cc:3000'
+  'http://dev.naja.cc:5000'
 
 config.api.versionRoot = config.api.root + '/v1'
 
