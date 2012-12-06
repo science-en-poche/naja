@@ -234,7 +234,7 @@ window.require.define({"controllers/home_controller": function(exports, require,
 }});
 
 window.require.define({"controllers/session_controller": function(exports, require, module) {
-  var Controller, LoginView, SessionController, User, mediator,
+  var Controller, Facebook, LoginView, Ostio, SessionController, Twitter, User, mediator,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -246,6 +246,12 @@ window.require.define({"controllers/session_controller": function(exports, requi
   User = require('models/user');
 
   LoginView = require('views/login_view');
+
+  Twitter = require('lib/services/twitter');
+
+  Facebook = require('lib/services/facebook');
+
+  Ostio = require('lib/services/ostio');
 
   module.exports = SessionController = (function(_super) {
 
@@ -260,7 +266,9 @@ window.require.define({"controllers/session_controller": function(exports, requi
       return SessionController.__super__.constructor.apply(this, arguments);
     }
 
-    SessionController.serviceProviders = {};
+    SessionController.serviceProviders = {
+      ostio: new Ostio()
+    };
 
     SessionController.prototype.loginStatusDetermined = false;
 
@@ -392,6 +400,489 @@ window.require.define({"initialize": function(exports, require, module) {
   
 }});
 
+window.require.define({"lib/services/facebook": function(exports, require, module) {
+  var Facebook, ServiceProvider, utils,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  utils = require('lib/utils');
+
+  ServiceProvider = require('lib/services/service_provider');
+
+  Facebook = (function(_super) {
+    var facebookAppId, scope;
+
+    __extends(Facebook, _super);
+
+    facebookAppId = '115149731946795';
+
+    scope = 'user_likes';
+
+    Facebook.prototype.name = 'facebook';
+
+    Facebook.prototype.status = null;
+
+    Facebook.prototype.accessToken = null;
+
+    function Facebook() {
+      this.processUserData = __bind(this.processUserData, this);
+
+      this.facebookLogout = __bind(this.facebookLogout, this);
+
+      this.loginStatusAfterAbort = __bind(this.loginStatusAfterAbort, this);
+
+      this.loginHandler = __bind(this.loginHandler, this);
+
+      this.triggerLogin = __bind(this.triggerLogin, this);
+
+      this.loginStatusHandler = __bind(this.loginStatusHandler, this);
+
+      this.getLoginStatus = __bind(this.getLoginStatus, this);
+
+      this.saveAuthResponse = __bind(this.saveAuthResponse, this);
+
+      this.loadHandler = __bind(this.loadHandler, this);
+      Facebook.__super__.constructor.apply(this, arguments);
+      utils.deferMethods({
+        deferred: this,
+        methods: ['parse', 'subscribe', 'postToGraph', 'getAccumulatedInfo', 'getInfo'],
+        onDeferral: this.load
+      });
+      utils.wrapAccumulators(this, ['getAccumulatedInfo']);
+      this.subscribeEvent('logout', this.logout);
+    }
+
+    Facebook.prototype.load = function() {
+      if (this.state() === 'resolved' || this.loading) {
+        return;
+      }
+      this.loading = true;
+      window.fbAsyncInit = this.loadHandler;
+      return utils.loadLib('http://connect.facebook.net/en_US/all.js', null, this.reject);
+    };
+
+    Facebook.prototype.loadHandler = function() {
+      this.loading = false;
+      try {
+        delete window.fbAsyncInit;
+      } catch (error) {
+        window.fbAsyncInit = void 0;
+      }
+      FB.init({
+        appId: facebookAppId,
+        status: true,
+        cookie: true,
+        xfbml: false
+      });
+      this.registerHandlers();
+      return this.resolve();
+    };
+
+    Facebook.prototype.registerHandlers = function() {
+      this.subscribe('auth.logout', this.facebookLogout);
+      this.subscribe('edge.create', this.processLike);
+      return this.subscribe('comment.create', this.processComment);
+    };
+
+    Facebook.prototype.unregisterHandlers = function() {
+      this.unsubscribe('auth.logout', this.facebookLogout);
+      this.unsubscribe('edge.create', this.processLike);
+      return this.unsubscribe('comment.create', this.processComment);
+    };
+
+    Facebook.prototype.isLoaded = function() {
+      return Boolean(window.FB && FB.login);
+    };
+
+    Facebook.prototype.saveAuthResponse = function(response) {
+      var authResponse;
+      this.status = response.status;
+      authResponse = response.authResponse;
+      if (authResponse) {
+        return this.accessToken = authResponse.accessToken;
+      } else {
+        return this.accessToken = null;
+      }
+    };
+
+    Facebook.prototype.getLoginStatus = function(callback, force) {
+      if (callback == null) {
+        callback = this.loginStatusHandler;
+      }
+      if (force == null) {
+        force = false;
+      }
+      return FB.getLoginStatus(callback, force);
+    };
+
+    Facebook.prototype.loginStatusHandler = function(response) {
+      var authResponse;
+      this.saveAuthResponse(response);
+      authResponse = response.authResponse;
+      if (authResponse) {
+        this.publishSession(authResponse);
+        return this.getUserData();
+      } else {
+        return this.publishEvent('logout');
+      }
+    };
+
+    Facebook.prototype.triggerLogin = function(loginContext) {
+      return FB.login(_(this.loginHandler).bind(this, loginContext), {
+        scope: scope
+      });
+    };
+
+    Facebook.prototype.loginHandler = function(loginContext, response) {
+      var authResponse, eventPayload, loginStatusHandler;
+      this.saveAuthResponse(response);
+      authResponse = response.authResponse;
+      eventPayload = {
+        provider: this,
+        loginContext: loginContext
+      };
+      if (authResponse) {
+        this.publishEvent('loginSuccessful', eventPayload);
+        this.publishSession(authResponse);
+        return this.getUserData();
+      } else {
+        this.publishEvent('loginAbort', eventPayload);
+        loginStatusHandler = _(this.loginStatusAfterAbort).bind(this, loginContext);
+        return this.getLoginStatus(loginStatusHandler, true);
+      }
+    };
+
+    Facebook.prototype.loginStatusAfterAbort = function(loginContext, response) {
+      var authResponse, eventPayload;
+      this.saveAuthResponse(response);
+      authResponse = response.authResponse;
+      eventPayload = {
+        provider: this,
+        loginContext: loginContext
+      };
+      if (authResponse) {
+        this.publishEvent('loginSuccessful', eventPayload);
+        return this.publishSession(authResponse);
+      } else {
+        return this.publishEvent('loginFail', eventPayload);
+      }
+    };
+
+    Facebook.prototype.publishSession = function(authResponse) {
+      return this.publishEvent('serviceProviderSession', {
+        provider: this,
+        userId: authResponse.userID,
+        accessToken: authResponse.accessToken
+      });
+    };
+
+    Facebook.prototype.facebookLogout = function(response) {
+      return this.saveAuthResponse(response);
+    };
+
+    Facebook.prototype.logout = function() {
+      return this.status = this.accessToken = null;
+    };
+
+    Facebook.prototype.processLike = function(url) {
+      return this.publishEvent('facebook:like', url);
+    };
+
+    Facebook.prototype.processComment = function(comment) {
+      return this.publishEvent('facebook:comment', comment.href);
+    };
+
+    Facebook.prototype.parse = function(el) {
+      return FB.XFBML.parse(el);
+    };
+
+    Facebook.prototype.subscribe = function(eventType, handler) {
+      return FB.Event.subscribe(eventType, handler);
+    };
+
+    Facebook.prototype.unsubscribe = function(eventType, handler) {
+      return FB.Event.unsubscribe(eventType, handler);
+    };
+
+    Facebook.prototype.postToGraph = function(ogResource, data, callback) {
+      return FB.api(ogResource, 'post', data, function(response) {
+        if (callback) {
+          return callback(response);
+        }
+      });
+    };
+
+    Facebook.prototype.getAccumulatedInfo = function(urls, callback) {
+      if (typeof urls === 'string') {
+        urls = [urls];
+      }
+      urls = _(urls).reduce(function(memo, url) {
+        if (memo) {
+          memo += ',';
+        }
+        return memo += encodeURIComponent(url);
+      }, '');
+      return FB.api("?ids=" + urls, callback);
+    };
+
+    Facebook.prototype.getInfo = function(id, callback) {
+      return FB.api(id, callback);
+    };
+
+    Facebook.prototype.getUserData = function() {
+      return this.getInfo('/me', this.processUserData);
+    };
+
+    Facebook.prototype.processUserData = function(response) {
+      return this.publishEvent('userData', response);
+    };
+
+    Facebook.prototype.dispose = function() {
+      if (this.disposed) {
+        return;
+      }
+      this.unregisterHandlers();
+      delete this.status;
+      delete this.accessToken;
+      return Facebook.__super__.dispose.apply(this, arguments);
+    };
+
+    return Facebook;
+
+  })(ServiceProvider);
+  
+}});
+
+window.require.define({"lib/services/google": function(exports, require, module) {
+  var Google, ServiceProvider, utils,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  utils = require('lib/utils');
+
+  ServiceProvider = require('lib/services/service_provider');
+
+  Google = (function(_super) {
+    var clientId, scopes;
+
+    __extends(Google, _super);
+
+    function Google() {
+      this.loadHandler = __bind(this.loadHandler, this);
+      return Google.__super__.constructor.apply(this, arguments);
+    }
+
+    clientId = '365800635017.apps.googleusercontent.com';
+
+    scopes = 'https://www.googleapis.com/auth/userinfo.profile';
+
+    Google.prototype.name = 'google';
+
+    Google.prototype.load = function() {
+      if (this.state() === 'resolved' || this.loading) {
+        return;
+      }
+      this.loading = true;
+      window.googleClientLoaded = this.loadHandler;
+      return utils.loadLib('https://apis.google.com/js/client.js?onload=googleClientLoaded', null, this.reject);
+    };
+
+    Google.prototype.loadHandler = function() {
+      try {
+        delete window.googleClientLoaded;
+      } catch (error) {
+        window.googleClientLoaded = void 0;
+      }
+      return gapi.auth.init(this.resolve);
+    };
+
+    Google.prototype.isLoaded = function() {
+      return Boolean(window.gapi && gapi.auth && gapi.auth.authorize);
+    };
+
+    Google.prototype.triggerLogin = function(loginContext) {
+      return gapi.auth.authorize({
+        client_id: clientId,
+        scope: scopes,
+        immediate: false
+      }, _(this.loginHandler).bind(this, loginContext));
+    };
+
+    Google.prototype.loginHandler = function(loginContext, authResponse) {
+      if (authResponse) {
+        this.publishEvent('loginSuccessful', {
+          provider: this,
+          loginContext: loginContext
+        });
+        return this.publishEvent('serviceProviderSession', {
+          provider: this,
+          accessToken: authResponse.access_token
+        });
+      } else {
+        return this.publishEvent('loginFail', {
+          provider: this,
+          loginContext: loginContext
+        });
+      }
+    };
+
+    Google.prototype.getLoginStatus = function(callback) {
+      return gapi.auth.authorize({
+        client_id: clientId,
+        scope: scopes,
+        immediate: true
+      }, callback);
+    };
+
+    Google.prototype.getUserInfo = function(callback) {
+      var request;
+      request = gapi.client.request({
+        path: '/oauth2/v2/userinfo'
+      });
+      return request.execute(callback);
+    };
+
+    Google.prototype.parsePlusOneButton = function(el) {
+      if (window.gapi && gapi.plusone && gapi.plusone.go) {
+        return gapi.plusone.go(el);
+      } else {
+        window.___gcfg = {
+          parsetags: 'explicit'
+        };
+        return utils.loadLib('https://apis.google.com/js/plusone.js', function() {
+          try {
+            delete window.___gcfg;
+          } catch (error) {
+            window.___gcfg = void 0;
+          }
+          return gapi.plusone.go(el);
+        });
+      }
+    };
+
+    return Google;
+
+  })(ServiceProvider);
+  
+}});
+
+window.require.define({"lib/services/ostio": function(exports, require, module) {
+  var Ostio, ServiceProvider, User, config, mediator,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  config = require('config');
+
+  mediator = require('mediator');
+
+  ServiceProvider = require('lib/services/service_provider');
+
+  User = require('models/user');
+
+  module.exports = Ostio = (function(_super) {
+
+    __extends(Ostio, _super);
+
+    Ostio.prototype.baseUrl = config.api.root;
+
+    function Ostio() {
+      this.loginStatusHandler = __bind(this.loginStatusHandler, this);
+
+      this.loginHandler = __bind(this.loginHandler, this);
+
+      var authCallback;
+      Ostio.__super__.constructor.apply(this, arguments);
+      this.accessToken = localStorage.getItem('accessToken');
+      authCallback = _(this.loginHandler).bind(this, this.loginHandler);
+      mediator.subscribe('auth:callback:ostio', authCallback);
+    }
+
+    Ostio.prototype.load = function() {
+      this.resolve();
+      return this;
+    };
+
+    Ostio.prototype.isLoaded = function() {
+      return true;
+    };
+
+    Ostio.prototype.ajax = function(type, url, data) {
+      url = this.baseUrl + url;
+      if (this.accessToken) {
+        url += "?access_token=" + this.accessToken;
+      }
+      return $.ajax({
+        url: url,
+        data: data,
+        type: type,
+        dataType: 'json'
+      });
+    };
+
+    Ostio.prototype.triggerLogin = function(loginContext) {
+      var callback;
+      callback = _(this.loginHandler).bind(this, this.loginHandler);
+      return window.location = URL;
+    };
+
+    Ostio.prototype.loginHandler = function(loginContext, response) {
+      if (response) {
+        this.publishEvent('loginSuccessful', {
+          provider: this,
+          loginContext: loginContext
+        });
+        this.accessToken = response.accessToken;
+        localStorage.setItem('accessToken', this.accessToken);
+        return this.getUserData().done(this.processUserData);
+      } else {
+        return this.publishEvent('loginFail', {
+          provider: this,
+          loginContext: loginContext
+        });
+      }
+    };
+
+    Ostio.prototype.getUserData = function() {
+      return this.ajax('get', '/v1/users/me');
+    };
+
+    Ostio.prototype.processUserData = function(response) {
+      return this.publishEvent('userData', response);
+    };
+
+    Ostio.prototype.getLoginStatus = function(callback, force) {
+      if (callback == null) {
+        callback = this.loginStatusHandler;
+      }
+      if (force == null) {
+        force = false;
+      }
+      return this.getUserData().always(callback);
+    };
+
+    Ostio.prototype.loginStatusHandler = function(response, status) {
+      var parsed;
+      if (!response || status === 'error') {
+        return this.publishEvent('logout');
+      } else {
+        parsed = User.prototype.parse.call(null, response);
+        return this.publishEvent('serviceProviderSession', _.extend(parsed, {
+          provider: this,
+          userId: response.id,
+          accessToken: this.accessToken
+        }));
+      }
+    };
+
+    return Ostio;
+
+  })(ServiceProvider);
+  
+}});
+
 window.require.define({"lib/services/service_provider": function(exports, require, module) {
   var Chaplin, ServiceProvider, utils;
 
@@ -484,6 +975,141 @@ window.require.define({"lib/services/service_provider": function(exports, requir
   
 }});
 
+window.require.define({"lib/services/twitter": function(exports, require, module) {
+  var ServiceProvider, Twitter, mediator, utils,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  mediator = require('mediator');
+
+  utils = require('lib/utils');
+
+  ServiceProvider = require('lib/services/service_provider');
+
+  Twitter = (function(_super) {
+    var consumerKey;
+
+    __extends(Twitter, _super);
+
+    consumerKey = 'w0uohox91TgpKETJmscYIQ';
+
+    Twitter.prototype.name = 'twitter';
+
+    function Twitter() {
+      this.loginStatusHandler = __bind(this.loginStatusHandler, this);
+
+      this.loginHandler = __bind(this.loginHandler, this);
+
+      this.sdkLoadHandler = __bind(this.sdkLoadHandler, this);
+      Twitter.__super__.constructor.apply(this, arguments);
+      this.subscribeEvent('!logout', this.logout);
+    }
+
+    Twitter.prototype.loadSDK = function() {
+      if (this.state() === 'resolved' || this.loading) {
+        return;
+      }
+      this.loading = true;
+      return utils.loadLib("http://platform.twitter.com/anywhere.js?id=" + consumerKey + "&v=1", this.sdkLoadHandler, this.reject);
+    };
+
+    Twitter.prototype.sdkLoadHandler = function() {
+      var _this = this;
+      this.loading = false;
+      return twttr.anywhere(function(T) {
+        _this.publishEvent('sdkLoaded');
+        _this.T = T;
+        return _this.resolve();
+      });
+    };
+
+    Twitter.prototype.isLoaded = function() {
+      return Boolean(window.twttr);
+    };
+
+    Twitter.prototype.publish = function(event, callback) {
+      return this.T.trigger(event, callback);
+    };
+
+    Twitter.prototype.subscribe = function(event, callback) {
+      return this.T.bind(event, callback);
+    };
+
+    Twitter.prototype.unsubscribe = function(event) {
+      return this.T.unbind(event);
+    };
+
+    Twitter.prototype.triggerLogin = function(loginContext) {
+      var callback;
+      callback = _(this.loginHandler).bind(this, loginContext);
+      this.T.signIn();
+      this.subscribe('authComplete', function(event, currentUser, accessToken) {
+        return callback({
+          currentUser: currentUser,
+          accessToken: accessToken
+        });
+      });
+      return this.subscribe('signOut', function() {
+        return callback();
+      });
+    };
+
+    Twitter.prototype.publishSession = function(response) {
+      var user;
+      user = response.currentUser;
+      this.publishEvent('serviceProviderSession', {
+        provider: this,
+        userId: user.id,
+        accessToken: response.accessToken || twttr.anywhere.token
+      });
+      return this.publishEvent('userData', user.attributes);
+    };
+
+    Twitter.prototype.loginHandler = function(loginContext, response) {
+      if (response) {
+        this.publishEvent('loginSuccessful', {
+          provider: this,
+          loginContext: loginContext
+        });
+        return this.publishSession(response);
+      } else {
+        return this.publishEvent('loginFail', {
+          provider: this,
+          loginContext: loginContext
+        });
+      }
+    };
+
+    Twitter.prototype.getLoginStatus = function(callback, force) {
+      if (callback == null) {
+        callback = this.loginStatusHandler;
+      }
+      if (force == null) {
+        force = false;
+      }
+      return callback(this.T);
+    };
+
+    Twitter.prototype.loginStatusHandler = function(response) {
+      if (response.currentUser) {
+        return this.publishSession(response);
+      } else {
+        return this.publishEvent('logout');
+      }
+    };
+
+    Twitter.prototype.logout = function() {
+      var _ref;
+      return typeof twttr !== "undefined" && twttr !== null ? (_ref = twttr.anywhere) != null ? typeof _ref.signOut === "function" ? _ref.signOut() : void 0 : void 0 : void 0;
+    };
+
+    return Twitter;
+
+  })(ServiceProvider);
+  
+}});
+
 window.require.define({"lib/support": function(exports, require, module) {
   var Chaplin, support, utils;
 
@@ -506,6 +1132,42 @@ window.require.define({"lib/utils": function(exports, require, module) {
   utils = Chaplin.utils.beget(Chaplin.utils);
 
   _(utils).extend({
+    loadLib: function(url, success, error, timeout) {
+      var head, onload, script, timeoutHandle;
+      if (timeout == null) {
+        timeout = 7500;
+      }
+      head = document.head || document.getElementsByTagName('head')[0] || document.documentElement;
+      script = document.createElement('script');
+      script.async = 'async';
+      script.src = url;
+      onload = function(_, aborted) {
+        if (aborted == null) {
+          aborted = false;
+        }
+        if (!(aborted || !script.readyState || script.readyState === 'complete')) {
+          return;
+        }
+        clearTimeout(timeoutHandle);
+        script.onload = script.onreadystatechange = script.onerror = null;
+        if (head && script.parentNode) {
+          head.removeChild(script);
+        }
+        script = void 0;
+        if (success && !aborted) {
+          return success();
+        }
+      };
+      script.onload = script.onreadystatechange = onload;
+      script.onerror = function() {
+        onload(null, true);
+        if (error) {
+          return error();
+        }
+      };
+      timeoutHandle = setTimeout(script.onerror, timeout);
+      return head.insertBefore(script, head.firstChild);
+    },
     /*
       Wrap methods so they can be called before a deferred is resolved.
       The actual methods are called once the deferred is resolved.
@@ -980,11 +1642,11 @@ window.require.define({"views/login_view": function(exports, require, module) {
 
     LoginView.prototype.template = template;
 
-    LoginView.prototype.id = 'login';
-
-    LoginView.prototype.container = '#content-container';
-
     LoginView.prototype.autoRender = true;
+
+    LoginView.prototype.container = '#page-container';
+
+    LoginView.prototype.id = 'login';
 
     LoginView.prototype.initialize = function(options) {
       LoginView.__super__.initialize.apply(this, arguments);
@@ -992,20 +1654,18 @@ window.require.define({"views/login_view": function(exports, require, module) {
     };
 
     LoginView.prototype.initButtons = function(serviceProviders) {
-      var buttonSelector, failed, loaded, loginHandler, serviceProvider, serviceProviderName, _results;
-      _results = [];
-      for (serviceProviderName in serviceProviders) {
-        serviceProvider = serviceProviders[serviceProviderName];
+      var _this = this;
+      return _.each(serviceProviders, function(serviceProvider, serviceProviderName) {
+        var bind, buttonSelector;
+        bind = function(fn) {
+          return _(fn).bind(_this, serviceProviderName, serviceProvider);
+        };
         buttonSelector = "." + serviceProviderName;
-        this.$(buttonSelector).addClass('service-loading');
-        loginHandler = _(this.loginWith).bind(this, serviceProviderName, serviceProvider);
-        this.delegate('click', buttonSelector, loginHandler);
-        loaded = _(this.serviceProviderLoaded).bind(this, serviceProviderName, serviceProvider);
-        serviceProvider.done(loaded);
-        failed = _(this.serviceProviderFailed).bind(this, serviceProviderName, serviceProvider);
-        _results.push(serviceProvider.fail(failed));
-      }
-      return _results;
+        _this.$(buttonSelector).addClass('service-loading');
+        _this.delegate('click', buttonSelector, bind(_this.loginWith));
+        serviceProvider.done(bind(_this.serviceProviderLoaded));
+        return serviceProvider.fail(bind(_this.serviceProviderFailed));
+      });
     };
 
     LoginView.prototype.loginWith = function(serviceProviderName, serviceProvider, event) {
@@ -1064,8 +1724,15 @@ window.require.define({"views/templates/header": function(exports, require, modu
     return buffer;}
   function program4(depth0,data) {
     
-    
-    return "\n\n          <a class=\"btn btn-primary pull-right\" href=\"#\">Log in with BrowserID</a>\n\n        ";}
+    var buffer = "", stack1;
+    buffer += "\n\n          <button class=\"btn btn-primary pull-right go-to\" data-href=\"";
+    foundHelper = helpers.api;
+    stack1 = foundHelper || depth0.api;
+    stack1 = (stack1 === null || stack1 === undefined || stack1 === false ? stack1 : stack1.root);
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "api.root", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "/auth/browserid\">Log in with BrowserID</button>\n\n        ";
+    return buffer;}
 
     buffer += "<div class=\"navbar navbar-inverse navbar-fixed-top\">\n  <div class=\"navbar-inner\">\n    <div class=\"container\">\n\n      <a class=\"btn btn-navbar\" data-toggle=\"collapse\" data-target=\".nav-collapse\">\n        <span class=\"icon-bar\"></span>\n        <span class=\"icon-bar\"></span>\n        <span class=\"icon-bar\"></span>\n      </a>\n\n      <a class=\"brand\" href=\"#\">Naja</a>\n\n      ";
     foundHelper = helpers.if_logged_in;

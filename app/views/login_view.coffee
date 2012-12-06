@@ -4,11 +4,11 @@ template = require 'views/templates/login'
 
 module.exports = class LoginView extends View
   template: template
-  id: 'login'
-  container: '#content-container'
   autoRender: true
+  container: '#page-container'
+  id: 'login'
 
-  # Expects the serviceProviders in the options
+  # Expects the serviceProviders in the options.
   initialize: (options) ->
     super
     @initButtons options.serviceProviders
@@ -16,24 +16,16 @@ module.exports = class LoginView extends View
   # In this project we currently only have one service provider and therefore
   # one button. But this should allow for different service providers.
   initButtons: (serviceProviders) ->
-    for serviceProviderName, serviceProvider of serviceProviders
+    _.each serviceProviders, (serviceProvider, serviceProviderName) =>
+      bind = (fn) =>
+        _(fn).bind this, serviceProviderName, serviceProvider
+
       buttonSelector = ".#{serviceProviderName}"
       @$(buttonSelector).addClass('service-loading')
 
-      loginHandler = _(@loginWith).bind(
-        this, serviceProviderName, serviceProvider
-      )
-      @delegate 'click', buttonSelector, loginHandler
-
-      loaded = _(@serviceProviderLoaded).bind(
-        this, serviceProviderName, serviceProvider
-      )
-      serviceProvider.done loaded
-
-      failed = _(@serviceProviderFailed).bind(
-        this, serviceProviderName, serviceProvider
-      )
-      serviceProvider.fail failed
+      @delegate 'click', buttonSelector, bind @loginWith
+      serviceProvider.done bind @serviceProviderLoaded
+      serviceProvider.fail bind @serviceProviderFailed
 
   loginWith: (serviceProviderName, serviceProvider, event) ->
     event.preventDefault()

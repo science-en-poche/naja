@@ -28,7 +28,7 @@
       {{else}}
         {{#with_config}}
 
-          <a class="btn btn-primary pull-right" href="#">Log in with BrowserID</a>
+          <button class="btn btn-primary pull-right go-to" data-href="{{api.root}}/auth/browserid">Log in with BrowserID</button>
 
         {{/with_config}}
       {{/if_logged_in}}

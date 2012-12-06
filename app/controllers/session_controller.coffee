@@ -2,13 +2,18 @@ mediator = require 'mediator'
 Controller = require 'controllers/base/controller'
 User = require 'models/user'
 LoginView = require 'views/login_view'
+Twitter = require 'lib/services/twitter'
+Facebook = require 'lib/services/facebook'
+Ostio = require 'lib/services/ostio'
 
 module.exports = class SessionController extends Controller
   # Service provider instances as static properties
   # This just hardcoded here to avoid async loading of service providers.
   # In the end you might want to do this.
   @serviceProviders = {
+    # twitter: new Twitter()
     # facebook: new Facebook()
+    ostio: new Ostio()
   }
 
   # Was the login status already determined?
