@@ -5,7 +5,7 @@ User = require 'models/user'
 
 module.exports = class BrowserID extends ServiceProvider
   name: 'browserid'
-  baseUrl: config.api.root
+  baseUrl: config.api.versionRoot
 
   constructor: ->
     super
@@ -39,11 +39,8 @@ module.exports = class BrowserID extends ServiceProvider
       # Publish the session and the user data
       @getUserData().always([@loginStatusHandler, @processUserData])
 
-      # Reload page
-      #location.reload true
-
   getUserData: ->
-    @ajax('get', '/me')
+    @ajax('get', '/users/me')
 
   processUserData: (response, status) =>
     if not response or status is 'error'
@@ -75,7 +72,6 @@ module.exports = class BrowserID extends ServiceProvider
     false
 
   logoutSuccessCallback: ->
-    # location.reload true
     false
 
   logoutErrorCallback: (res, status, xhr) ->
