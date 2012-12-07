@@ -3,9 +3,9 @@ config = {api: {}}
 production = no
 
 config.api.root = if production
-  'http://api.naja.cc'
+  'http://naja.cc/api'
 else
-  'http://dev.naja.cc:5000'
+  'http://naja.cc/api'
 
 config.api.versionRoot = config.api.root + '/v1'
 

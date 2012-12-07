@@ -12,25 +12,24 @@
 
       {{#if_logged_in}}
 
+        {{#with_user}}
+
           <div class="btn-group pull-right">
-            <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-              <i class="icon-user"></i> {{login}}
+            <button class="btn dropdown-toggle" data-toggle="dropdown">
+              <i class="icon-user"></i> {{userId}}
               <span class="caret"></span>
-            </a>
+            </button>
             <ul class="dropdown-menu">
-              <li><a href="#">Settings</a></li>
+              <li><a href="#"><i class="icon-cog"></i> Settings </a></li>
               <li class="divider"></li>
-              <li><a href="#">Sign Out</a></li>
+              <li><a href="#" class="browserid-logout"><i class="icon-off"></i> Sign Out </a></li>
             </ul>
           </div>
-          <a class="btn pull-right" href="#"><i class="icon-home"></i> Home</a>
+
+        {{/with_user}}
 
       {{else}}
-        {{#with_config}}
-
-          <button class="btn btn-primary pull-right go-to" data-href="{{api.root}}/auth/browserid">Log in with BrowserID</button>
-
-        {{/with_config}}
+          <button class="btn btn-primary pull-right browserid-login">Log in with BrowserID</button>
       {{/if_logged_in}}
 
       <div class="nav-collapse collapse">

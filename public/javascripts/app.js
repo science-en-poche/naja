@@ -142,7 +142,7 @@ window.require.define({"config": function(exports, require, module) {
 
   production = false;
 
-  config.api.root = production ? 'http://api.naja.cc' : 'http://dev.naja.cc:5000';
+  config.api.root = production ? 'http://naja.cc/api' : 'http://naja.cc/api';
 
   config.api.versionRoot = config.api.root + '/v1';
 
@@ -221,6 +221,8 @@ window.require.define({"controllers/home_controller": function(exports, require,
       return HomeController.__super__.constructor.apply(this, arguments);
     }
 
+    HomeController.prototype.title = 'Home';
+
     HomeController.prototype.historyURL = 'home';
 
     HomeController.prototype.index = function() {
@@ -234,7 +236,7 @@ window.require.define({"controllers/home_controller": function(exports, require,
 }});
 
 window.require.define({"controllers/session_controller": function(exports, require, module) {
-  var Controller, Facebook, LoginView, Ostio, SessionController, Twitter, User, mediator,
+  var BrowserID, Controller, LoginView, SessionController, User, mediator,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -247,11 +249,7 @@ window.require.define({"controllers/session_controller": function(exports, requi
 
   LoginView = require('views/login_view');
 
-  Twitter = require('lib/services/twitter');
-
-  Facebook = require('lib/services/facebook');
-
-  Ostio = require('lib/services/ostio');
+  BrowserID = require('lib/services/browserid');
 
   module.exports = SessionController = (function(_super) {
 
@@ -260,6 +258,8 @@ window.require.define({"controllers/session_controller": function(exports, requi
     function SessionController() {
       this.logout = __bind(this.logout, this);
 
+      this.triggerLogout = __bind(this.triggerLogout, this);
+
       this.serviceProviderSession = __bind(this.serviceProviderSession, this);
 
       this.triggerLogin = __bind(this.triggerLogin, this);
@@ -267,7 +267,7 @@ window.require.define({"controllers/session_controller": function(exports, requi
     }
 
     SessionController.serviceProviders = {
-      ostio: new Ostio()
+      browserid: new BrowserID()
     };
 
     SessionController.prototype.loginStatusDetermined = false;
@@ -337,8 +337,6 @@ window.require.define({"controllers/session_controller": function(exports, requi
     SessionController.prototype.serviceProviderSession = function(session) {
       this.serviceProviderName = session.provider.name;
       this.disposeLoginView();
-      session.id = session.userId;
-      delete session.userId;
       this.createUser(session);
       return this.publishLogin();
     };
@@ -354,6 +352,12 @@ window.require.define({"controllers/session_controller": function(exports, requi
     };
 
     SessionController.prototype.logout = function() {
+      var serviceProvider;
+      if (!this.serviceProviderName) {
+        return;
+      }
+      serviceProvider = SessionController.serviceProviders[this.serviceProviderName];
+      serviceProvider.triggerLogout();
       this.loginStatusDetermined = true;
       this.disposeUser();
       this.serviceProviderName = null;
@@ -397,6 +401,140 @@ window.require.define({"initialize": function(exports, require, module) {
     app = new Application();
     return app.initialize();
   });
+  
+}});
+
+window.require.define({"lib/services/browserid": function(exports, require, module) {
+  var BrowserID, ServiceProvider, User, config, mediator,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  config = require('config');
+
+  mediator = require('mediator');
+
+  ServiceProvider = require('lib/services/service_provider');
+
+  User = require('models/user');
+
+  module.exports = BrowserID = (function(_super) {
+
+    __extends(BrowserID, _super);
+
+    BrowserID.prototype.name = 'browserid';
+
+    BrowserID.prototype.baseUrl = config.api.root;
+
+    function BrowserID() {
+      this.triggerLogout = __bind(this.triggerLogout, this);
+
+      this.gotAssertion = __bind(this.gotAssertion, this);
+
+      this.loginStatusHandler = __bind(this.loginStatusHandler, this);
+
+      this.processUserData = __bind(this.processUserData, this);
+
+      this.loginHandler = __bind(this.loginHandler, this);
+      BrowserID.__super__.constructor.apply(this, arguments);
+    }
+
+    BrowserID.prototype.load = function() {
+      this.resolve();
+      return this;
+    };
+
+    BrowserID.prototype.isLoaded = function() {
+      return true;
+    };
+
+    BrowserID.prototype.ajax = function(type, url, data) {
+      url = this.baseUrl + url;
+      return $.ajax({
+        url: url,
+        data: data,
+        type: type,
+        dataType: 'json'
+      });
+    };
+
+    BrowserID.prototype.triggerLogin = function(loginContext) {
+      return navigator.id.get(this.gotAssertion);
+    };
+
+    BrowserID.prototype.loginHandler = function(response, status) {
+      var eventPayload;
+      eventPayload = {
+        provider: this,
+        response: response
+      };
+      if (status === 'error') {
+        this.publishEvent('loginFail', eventPayload);
+        return alert("login failure: " + status);
+      } else {
+        this.publishEvent('loginSuccessful', eventPayload);
+        return this.getUserData().always([this.loginStatusHandler, this.processUserData]);
+      }
+    };
+
+    BrowserID.prototype.getUserData = function() {
+      return this.ajax('get', '/me');
+    };
+
+    BrowserID.prototype.processUserData = function(response, status) {
+      if (!response || status === 'error') {
+        return false;
+      }
+      return this.publishEvent('userData', response);
+    };
+
+    BrowserID.prototype.getLoginStatus = function(callback, force) {
+      if (callback == null) {
+        callback = this.loginStatusHandler;
+      }
+      if (force == null) {
+        force = false;
+      }
+      return this.getUserData().always(callback);
+    };
+
+    BrowserID.prototype.loginStatusHandler = function(response, status) {
+      if (!response || status === 'error') {
+        return this.publishEvent('logout');
+      } else {
+        return this.publishEvent('serviceProviderSession', {
+          provider: this,
+          userId: response.userId
+        });
+      }
+    };
+
+    BrowserID.prototype.gotAssertion = function(assertion) {
+      if (assertion) {
+        return this.ajax('post', '/auth/browserid/login', {
+          assertion: assertion
+        }).always(this.loginHandler);
+      }
+    };
+
+    BrowserID.prototype.triggerLogout = function() {
+      navigator.id.logout();
+      this.ajax('post', '/auth/browserid/logout').done(this.logoutSuccessCallback).fail(this.logoutErrorCallback);
+      return false;
+    };
+
+    BrowserID.prototype.logoutSuccessCallback = function() {
+      return false;
+    };
+
+    BrowserID.prototype.logoutErrorCallback = function(res, status, xhr) {
+      console.log(res);
+      return alert("logout failure: " + status);
+    };
+
+    return BrowserID;
+
+  })(ServiceProvider);
   
 }});
 
@@ -1322,7 +1460,7 @@ window.require.define({"lib/view_helper": function(exports, require, module) {
 
   Handlebars.registerHelper('with_user', function(options) {
     var context;
-    context = mediator.user || {};
+    context = mediator.user.getAttributes();
     return Handlebars.helpers["with"].call(this, context, options);
   });
   
@@ -1532,6 +1670,7 @@ window.require.define({"views/base/view": function(exports, require, module) {
 
 window.require.define({"views/header_view": function(exports, require, module) {
   var HeaderView, View, template,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -1544,6 +1683,9 @@ window.require.define({"views/header_view": function(exports, require, module) {
     __extends(HeaderView, _super);
 
     function HeaderView() {
+      this.triggerLogout = __bind(this.triggerLogout, this);
+
+      this.triggerLogin = __bind(this.triggerLogin, this);
       return HeaderView.__super__.constructor.apply(this, arguments);
     }
 
@@ -1560,7 +1702,17 @@ window.require.define({"views/header_view": function(exports, require, module) {
     HeaderView.prototype.initialize = function() {
       HeaderView.__super__.initialize.apply(this, arguments);
       this.subscribeEvent('loginStatus', this.render);
-      return this.subscribeEvent('startupController', this.render);
+      this.subscribeEvent('startupController', this.render);
+      this.delegate('click', '.browserid-login', this.triggerLogin);
+      return this.delegate('click', '.browserid-logout', this.triggerLogout);
+    };
+
+    HeaderView.prototype.triggerLogin = function() {
+      return this.publishEvent('!login', 'browserid');
+    };
+
+    HeaderView.prototype.triggerLogout = function() {
+      return this.publishEvent('!logout');
     };
 
     return HeaderView;
@@ -1699,40 +1851,33 @@ window.require.define({"views/templates/header": function(exports, require, modu
   function program1(depth0,data) {
     
     var buffer = "", stack1;
-    buffer += "\n\n          <div class=\"btn-group pull-right\">\n            <a class=\"btn dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">\n              <i class=\"icon-user\"></i> ";
-    foundHelper = helpers.login;
-    stack1 = foundHelper || depth0.login;
-    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
-    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "login", { hash: {} }); }
-    buffer += escapeExpression(stack1) + "\n              <span class=\"caret\"></span>\n            </a>\n            <ul class=\"dropdown-menu\">\n              <li><a href=\"#\">Settings</a></li>\n              <li class=\"divider\"></li>\n              <li><a href=\"#\">Sign Out</a></li>\n            </ul>\n          </div>\n          <a class=\"btn pull-right\" href=\"#\"><i class=\"icon-home\"></i> Home</a>\n\n      ";
-    return buffer;}
-
-  function program3(depth0,data) {
-    
-    var buffer = "", stack1;
-    buffer += "\n        ";
-    foundHelper = helpers.with_config;
-    stack1 = foundHelper || depth0.with_config;
-    tmp1 = self.program(4, program4, data);
+    buffer += "\n\n        ";
+    foundHelper = helpers.with_user;
+    stack1 = foundHelper || depth0.with_user;
+    tmp1 = self.program(2, program2, data);
     tmp1.hash = {};
     tmp1.fn = tmp1;
     tmp1.inverse = self.noop;
     if(foundHelper && typeof stack1 === functionType) { stack1 = stack1.call(depth0, tmp1); }
     else { stack1 = blockHelperMissing.call(depth0, stack1, tmp1); }
     if(stack1 || stack1 === 0) { buffer += stack1; }
-    buffer += "\n      ";
+    buffer += "\n\n      ";
     return buffer;}
-  function program4(depth0,data) {
+  function program2(depth0,data) {
     
     var buffer = "", stack1;
-    buffer += "\n\n          <button class=\"btn btn-primary pull-right go-to\" data-href=\"";
-    foundHelper = helpers.api;
-    stack1 = foundHelper || depth0.api;
-    stack1 = (stack1 === null || stack1 === undefined || stack1 === false ? stack1 : stack1.root);
+    buffer += "\n\n          <div class=\"btn-group pull-right\">\n            <button class=\"btn dropdown-toggle\" data-toggle=\"dropdown\">\n              <i class=\"icon-user\"></i> ";
+    foundHelper = helpers.userId;
+    stack1 = foundHelper || depth0.userId;
     if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
-    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "api.root", { hash: {} }); }
-    buffer += escapeExpression(stack1) + "/auth/browserid\">Log in with BrowserID</button>\n\n        ";
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "userId", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "\n              <span class=\"caret\"></span>\n            </button>\n            <ul class=\"dropdown-menu\">\n              <li><a href=\"#\"><i class=\"icon-cog\"></i> Settings </a></li>\n              <li class=\"divider\"></li>\n              <li><a href=\"#\" class=\"browserid-logout\"><i class=\"icon-off\"></i> Sign Out </a></li>\n            </ul>\n          </div>\n\n        ";
     return buffer;}
+
+  function program4(depth0,data) {
+    
+    
+    return "\n          <button class=\"btn btn-primary pull-right browserid-login\">Log in with BrowserID</button>\n      ";}
 
     buffer += "<div class=\"navbar navbar-inverse navbar-fixed-top\">\n  <div class=\"navbar-inner\">\n    <div class=\"container\">\n\n      <a class=\"btn btn-navbar\" data-toggle=\"collapse\" data-target=\".nav-collapse\">\n        <span class=\"icon-bar\"></span>\n        <span class=\"icon-bar\"></span>\n        <span class=\"icon-bar\"></span>\n      </a>\n\n      <a class=\"brand\" href=\"#\">Naja</a>\n\n      ";
     foundHelper = helpers.if_logged_in;
@@ -1740,7 +1885,7 @@ window.require.define({"views/templates/header": function(exports, require, modu
     tmp1 = self.program(1, program1, data);
     tmp1.hash = {};
     tmp1.fn = tmp1;
-    tmp1.inverse = self.program(3, program3, data);
+    tmp1.inverse = self.program(4, program4, data);
     if(foundHelper && typeof stack1 === functionType) { stack1 = stack1.call(depth0, tmp1); }
     else { stack1 = blockHelperMissing.call(depth0, stack1, tmp1); }
     if(stack1 || stack1 === 0) { buffer += stack1; }
@@ -1754,7 +1899,7 @@ window.require.define({"views/templates/home_page": function(exports, require, m
     var foundHelper, self=this;
 
 
-    return "<div class=\"hero-unit\">\n  <h1>Cognitive Science. Through Smartphones.</h1>\n  <p>Ever thought you cognitive science experiments had a strong selection bias? Ever wanted to increase <em>N</em> above 50 or 100? Ever thought those experiments could be better fun? Dreamed about <em>in vivo</em> instead of <em>in vitro</em>?</p>\n  <p><a href=\"#\">Brainydroid</a> and <a href=\"#\">Naja</a> let you program awesome experiments for Android and collect humongous amounts of <em>in vivo</em> data.</p>\n  <p><a class=\"btn btn-primary btn-large\">Learn more &raquo;</a></p>\n</div>\n\n<div class=\"row\">\n  <div class=\"span4\">\n    <h2>In vivo</h2>\n    <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>\n    <p><a class=\"btn\" href=\"#\">View details &raquo;</a></p>\n  </div>\n\n  <div class=\"span4\">\n    <h2>Huge user base</h2>\n    <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>\n    <p><a class=\"btn\" href=\"#\">View details &raquo;</a></p>\n  </div>\n\n  <div class=\"span4\">\n    <h2>Clinical use</h2>\n    <p>Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>\n    <p><a class=\"btn\" href=\"#\">View details &raquo;</a></p>\n  </div>\n</div>\n";});
+    return "<div class=\"hero-unit\">\n  <h1>Cognitive Science. Through Smartphones.</h1>\n  <p>Ever thought you cognitive science experiments had a strong selection bias? Ever wanted to increase <em>N</em> above 50 or 100? Ever thought those experiments could be better fun? Dreamed about <em>in vivo</em> instead of <em>in vitro</em>?</p>\n  <p><a rel=\"tooltip\" title=\"bla\" href=\"#\">Brainydroid</a> and <a href=\"#\">Naja</a> let you program awesome experiments for Android and collect humongous amounts of <em>in vivo</em> data.</p>\n  <p><a class=\"btn btn-primary btn-large\">Learn more &raquo;</a></p>\n</div>\n\n<div class=\"row\">\n  <div class=\"span4\">\n    <h2>In vivo</h2>\n    <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>\n    <p><a class=\"btn\" href=\"#\">View details &raquo;</a></p>\n  </div>\n\n  <div class=\"span4\">\n    <h2>Huge user base</h2>\n    <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>\n    <p><a class=\"btn\" href=\"#\">View details &raquo;</a></p>\n  </div>\n\n  <div class=\"span4\">\n    <h2>Clinical use</h2>\n    <p>Donec sed odio dui. Cras justo odio, dapibus ac facilisis in, egestas eget quam. Vestibulum id ligula porta felis euismod semper. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>\n    <p><a class=\"btn\" href=\"#\">View details &raquo;</a></p>\n  </div>\n</div>\n";});
 }});
 
 window.require.define({"views/templates/login": function(exports, require, module) {

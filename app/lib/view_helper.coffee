@@ -41,5 +41,5 @@ Handlebars.registerHelper 'with_config', (options) ->
 
 # Evaluate block with context being current user
 Handlebars.registerHelper 'with_user', (options) ->
-  context = mediator.user or {}
+  context = mediator.user.getAttributes()
   Handlebars.helpers.with.call(this, context, options)

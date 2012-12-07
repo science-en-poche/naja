@@ -2,18 +2,14 @@ mediator = require 'mediator'
 Controller = require 'controllers/base/controller'
 User = require 'models/user'
 LoginView = require 'views/login_view'
-Twitter = require 'lib/services/twitter'
-Facebook = require 'lib/services/facebook'
-Ostio = require 'lib/services/ostio'
+BrowserID = require 'lib/services/browserid'
 
 module.exports = class SessionController extends Controller
   # Service provider instances as static properties
   # This just hardcoded here to avoid async loading of service providers.
   # In the end you might want to do this.
   @serviceProviders = {
-    # twitter: new Twitter()
-    # facebook: new Facebook()
-    ostio: new Ostio()
+    browserid: new BrowserID()
   }
 
   # Was the login status already determined?
@@ -91,9 +87,7 @@ module.exports = class SessionController extends Controller
     # Hide the login view
     @disposeLoginView()
 
-    # Transform session into user attributes and create a user
-    session.id = session.userId
-    delete session.userId
+    # Create a user
     @createUser session
 
     @publishLogin()
@@ -110,12 +104,21 @@ module.exports = class SessionController extends Controller
   # ------
 
   # Handler for the global !logout event
-  triggerLogout: ->
+  triggerLogout: =>
     # Just publish a logout event for now
     @publishEvent 'logout'
 
   # Handler for the global logout event
   logout: =>
+
+    unless @serviceProviderName
+        return
+
+    serviceProvider = SessionController.serviceProviders[@serviceProviderName]
+
+    # Delegate to serviceProvider
+    serviceProvider.triggerLogout()
+
     @loginStatusDetermined = true
 
     @disposeUser()
