@@ -1871,7 +1871,7 @@ window.require.define({"views/templates/header": function(exports, require, modu
     stack1 = foundHelper || depth0.userId;
     if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
     else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "userId", { hash: {} }); }
-    buffer += escapeExpression(stack1) + "\n              <span class=\"caret\"></span>\n            </button>\n            <ul class=\"dropdown-menu\">\n              <li><a href=\"\"><i class=\"icon-cog\"></i> Settings </a></li>\n              <li class=\"divider\"></li>\n              <li><a href=\"\" class=\"browserid-logout\"><i class=\"icon-off\"></i> Sign Out </a></li>\n            </ul>\n          </div>\n\n        ";
+    buffer += escapeExpression(stack1) + "\n              <span class=\"caret\"></span>\n            </button>\n            <ul class=\"dropdown-menu\">\n              <li><a href=\"#\"><i class=\"icon-cog\"></i> Settings </a></li>\n              <li class=\"divider\"></li>\n              <li><a href=\"#\" class=\"browserid-logout\"><i class=\"icon-off\"></i> Sign Out </a></li>\n            </ul>\n          </div>\n\n        ";
     return buffer;}
 
   function program4(depth0,data) {
