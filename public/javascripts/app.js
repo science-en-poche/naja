@@ -478,7 +478,7 @@ window.require.define({"lib/services/browserid": function(exports, require, modu
     };
 
     BrowserID.prototype.getUserData = function() {
-      return this.ajax('get', '/users/me');
+      return this.ajax('get', '/user/me');
     };
 
     BrowserID.prototype.processUserData = function(response, status) {
@@ -504,7 +504,7 @@ window.require.define({"lib/services/browserid": function(exports, require, modu
       } else {
         return this.publishEvent('serviceProviderSession', {
           provider: this,
-          userId: response.userId
+          email: response.email
         });
       }
     };
@@ -1668,59 +1668,6 @@ window.require.define({"views/base/view": function(exports, require, module) {
   
 }});
 
-window.require.define({"views/header_view": function(exports, require, module) {
-  var HeaderView, View, template,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-  View = require('views/base/view');
-
-  template = require('views/templates/header');
-
-  module.exports = HeaderView = (function(_super) {
-
-    __extends(HeaderView, _super);
-
-    function HeaderView() {
-      this.triggerLogout = __bind(this.triggerLogout, this);
-
-      this.triggerLogin = __bind(this.triggerLogin, this);
-      return HeaderView.__super__.constructor.apply(this, arguments);
-    }
-
-    HeaderView.prototype.template = template;
-
-    HeaderView.prototype.id = 'header';
-
-    HeaderView.prototype.className = 'header';
-
-    HeaderView.prototype.container = '#header-container';
-
-    HeaderView.prototype.autoRender = true;
-
-    HeaderView.prototype.initialize = function() {
-      HeaderView.__super__.initialize.apply(this, arguments);
-      this.subscribeEvent('loginStatus', this.render);
-      this.subscribeEvent('startupController', this.render);
-      this.delegate('click', '.browserid-login', this.triggerLogin);
-      return this.delegate('click', '.browserid-logout', this.triggerLogout);
-    };
-
-    HeaderView.prototype.triggerLogin = function() {
-      return this.publishEvent('!login', 'browserid');
-    };
-
-    HeaderView.prototype.triggerLogout = function() {
-      return this.publishEvent('!logout');
-    };
-
-    return HeaderView;
-
-  })(View);
-  
-}});
-
 window.require.define({"views/home_page_view": function(exports, require, module) {
   var HomePageView, PageView, template,
     __hasProp = {}.hasOwnProperty,
@@ -1841,56 +1788,6 @@ window.require.define({"views/login_view": function(exports, require, module) {
 
   })(View);
   
-}});
-
-window.require.define({"views/templates/header": function(exports, require, module) {
-  module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
-    helpers = helpers || Handlebars.helpers;
-    var buffer = "", stack1, foundHelper, tmp1, self=this, functionType="function", helperMissing=helpers.helperMissing, undef=void 0, escapeExpression=this.escapeExpression, blockHelperMissing=helpers.blockHelperMissing;
-
-  function program1(depth0,data) {
-    
-    var buffer = "", stack1;
-    buffer += "\n\n        ";
-    foundHelper = helpers.with_user;
-    stack1 = foundHelper || depth0.with_user;
-    tmp1 = self.program(2, program2, data);
-    tmp1.hash = {};
-    tmp1.fn = tmp1;
-    tmp1.inverse = self.noop;
-    if(foundHelper && typeof stack1 === functionType) { stack1 = stack1.call(depth0, tmp1); }
-    else { stack1 = blockHelperMissing.call(depth0, stack1, tmp1); }
-    if(stack1 || stack1 === 0) { buffer += stack1; }
-    buffer += "\n\n      ";
-    return buffer;}
-  function program2(depth0,data) {
-    
-    var buffer = "", stack1;
-    buffer += "\n\n          <div class=\"btn-group pull-right\">\n            <button class=\"btn dropdown-toggle\" data-toggle=\"dropdown\">\n              <i class=\"icon-user\"></i> ";
-    foundHelper = helpers.userId;
-    stack1 = foundHelper || depth0.userId;
-    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
-    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "userId", { hash: {} }); }
-    buffer += escapeExpression(stack1) + "\n              <span class=\"caret\"></span>\n            </button>\n            <ul class=\"dropdown-menu\">\n              <li><a href=\"#\"><i class=\"icon-cog\"></i> Settings </a></li>\n              <li class=\"divider\"></li>\n              <li><a href=\"#\" class=\"browserid-logout\"><i class=\"icon-off\"></i> Sign Out </a></li>\n            </ul>\n          </div>\n\n        ";
-    return buffer;}
-
-  function program4(depth0,data) {
-    
-    
-    return "\n          <button class=\"btn btn-primary pull-right browserid-login\">Log in with BrowserID</button>\n      ";}
-
-    buffer += "<div class=\"navbar navbar-inverse navbar-fixed-top\">\n  <div class=\"navbar-inner\">\n    <div class=\"container\">\n\n      <a class=\"btn btn-navbar\" data-toggle=\"collapse\" data-target=\".nav-collapse\">\n        <span class=\"icon-bar\"></span>\n        <span class=\"icon-bar\"></span>\n        <span class=\"icon-bar\"></span>\n      </a>\n\n      <a class=\"brand\" href=\"#\">Naja</a>\n\n      ";
-    foundHelper = helpers.if_logged_in;
-    stack1 = foundHelper || depth0.if_logged_in;
-    tmp1 = self.program(1, program1, data);
-    tmp1.hash = {};
-    tmp1.fn = tmp1;
-    tmp1.inverse = self.program(4, program4, data);
-    if(foundHelper && typeof stack1 === functionType) { stack1 = stack1.call(depth0, tmp1); }
-    else { stack1 = blockHelperMissing.call(depth0, stack1, tmp1); }
-    if(stack1 || stack1 === 0) { buffer += stack1; }
-    buffer += "\n\n      <div class=\"nav-collapse collapse\">\n        <ul class=\"nav\">\n          <li class=\"active\"><a href=\"#\">Home</a></li>\n          <li><a href=\"#\">About</a></li>\n          <li><a href=\"#\">Contact</a></li>\n        </ul>\n      </div>\n\n    </div>\n  </div>\n</div>\n";
-    return buffer;});
 }});
 
 window.require.define({"views/templates/home_page": function(exports, require, module) {
