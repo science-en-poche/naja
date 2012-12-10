@@ -283,7 +283,7 @@ window.require.define({"controllers/home_controller": function(exports, require,
     HomeController.prototype.initialize = function() {
       HomeController.__super__.initialize.apply(this, arguments);
       this.subscribeEvent('loginStatus', this.loginStatus);
-      return this.subscribeEvent('!logout', this.logout);
+      return this.subscribeEvent('logout', this.logout);
     };
 
     HomeController.prototype.checkUser = function() {
@@ -1339,9 +1339,9 @@ window.require.define({"views/exp/exp_view": function(exports, require, module) 
       return ExpView.__super__.constructor.apply(this, arguments);
     }
 
-    ExpView.prototype.className = 'user-exp';
+    ExpView.prototype.className = 'media user-exp';
 
-    ExpView.prototype.tagName = 'li';
+    ExpView.prototype.tagName = 'div';
 
     ExpView.prototype.template = template;
 
@@ -1372,7 +1372,7 @@ window.require.define({"views/exp/exps_view": function(exports, require, module)
 
     ExpsView.prototype.itemView = Exp;
 
-    ExpsView.prototype.tagName = 'ul';
+    ExpsView.prototype.tagName = 'div';
 
     return ExpsView;
 
@@ -1599,7 +1599,30 @@ window.require.define({"views/templates/exp": function(exports, require, module)
     else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "email", { hash: {} }); }
     return escapeExpression(stack1);}
 
-    buffer += "<a href=\"/";
+  function program3(depth0,data) {
+    
+    var stack1;
+    foundHelper = helpers.email;
+    stack1 = foundHelper || depth0.email;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "email", { hash: {} }); }
+    return escapeExpression(stack1);}
+
+  function program5(depth0,data) {
+    
+    var stack1;
+    foundHelper = helpers.description;
+    stack1 = foundHelper || depth0.description;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "description", { hash: {} }); }
+    return escapeExpression(stack1);}
+
+  function program7(depth0,data) {
+    
+    
+    return "No description";}
+
+    buffer += "<a class=\"pull-left\" href=\"/";
     foundHelper = helpers.owner;
     stack1 = foundHelper || depth0.owner;
     stack2 = helpers['with'];
@@ -1614,12 +1637,37 @@ window.require.define({"views/templates/exp": function(exports, require, module)
     stack1 = foundHelper || depth0.name;
     if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
     else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "name", { hash: {} }); }
-    buffer += escapeExpression(stack1) + "\">\n  ";
+    buffer += escapeExpression(stack1) + "\">\n  <img class=\"media-object\" src=\"https://mehho.net/sl/seb-avatar.png\">\n</a>\n<div class=\"media-body\">\n  <h4 class=\"media-heading\"><a href=\"/";
+    foundHelper = helpers.owner;
+    stack1 = foundHelper || depth0.owner;
+    stack2 = helpers['with'];
+    tmp1 = self.program(3, program3, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.noop;
+    stack1 = stack2.call(depth0, stack1, tmp1);
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += "/";
     foundHelper = helpers.name;
     stack1 = foundHelper || depth0.name;
     if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
     else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "name", { hash: {} }); }
-    buffer += escapeExpression(stack1) + "\n</a>\n";
+    buffer += escapeExpression(stack1) + "\">";
+    foundHelper = helpers.name;
+    stack1 = foundHelper || depth0.name;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "name", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "</a></h4>\n  ";
+    foundHelper = helpers.description;
+    stack1 = foundHelper || depth0.description;
+    stack2 = helpers['if'];
+    tmp1 = self.program(5, program5, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.program(7, program7, data);
+    stack1 = stack2.call(depth0, stack1, tmp1);
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += "\n</div>\n";
     return buffer;});
 }});
 
@@ -1701,7 +1749,7 @@ window.require.define({"views/templates/home_page": function(exports, require, m
     var foundHelper, self=this;
 
 
-    return "<div class=\"home-exp-list-container\">\n  <h4>Experiments</h4>\n</div>\n";});
+    return "<div class=\"row\">\n  <div class=\"offset3 span6 home-exp-list-container\">\n    <h2>Experiments</h2>\n  </div>\n</div>\n";});
 }});
 
 window.require.define({"views/templates/login": function(exports, require, module) {

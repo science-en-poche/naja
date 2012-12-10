@@ -22,7 +22,7 @@ module.exports = class HomeController extends Controller
   initialize: ->
     super
     @subscribeEvent 'loginStatus', @loginStatus
-    @subscribeEvent '!logout', @logout
+    @subscribeEvent 'logout', @logout
 
   checkUser: =>
     if mediator.user

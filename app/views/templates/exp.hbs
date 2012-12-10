@@ -1,3 +1,7 @@
-<a href="/{{#with owner}}{{email}}{{/with}}/{{name}}">
-  {{name}}
+<a class="pull-left" href="/{{#with owner}}{{email}}{{/with}}/{{name}}">
+  <img class="media-object" src="https://mehho.net/sl/seb-avatar.png">
 </a>
+<div class="media-body">
+  <h4 class="media-heading"><a href="/{{#with owner}}{{email}}{{/with}}/{{name}}">{{name}}</a></h4>
+  {{#if description}}{{description}}{{else}}No description{{/if}}
+</div>
