@@ -66,6 +66,9 @@ module.exports = class SessionController extends Controller
   # Handler for the global !login event
   # Delegate the login to the selected service provider
   triggerLogin: (serviceProviderName) =>
+    # This event was manually triggered
+    @publishEvent 'loginTriggered'
+
     serviceProvider = SessionController.serviceProviders[serviceProviderName]
 
     # Publish an event in case the provider library could not be loaded
@@ -105,6 +108,9 @@ module.exports = class SessionController extends Controller
 
   # Handler for the global !logout event
   triggerLogout: =>
+    # This event was manually triggered
+    @publishEvent 'logoutTriggered'
+
     # Just publish a logout event for now
     @publishEvent 'logout'
 

@@ -68,13 +68,12 @@ module.exports = class BrowserID extends ServiceProvider
     navigator.id.logout()
 
     @ajax('post', '/auth/browserid/logout')
-      .done(@logoutSuccessCallback)
-      .fail(@logoutErrorCallback)
+      .always(@logoutHandler)
     false
 
-  logoutSuccessCallback: ->
-    false
-
-  logoutErrorCallback: (res, status, xhr) ->
-    console.log res
-    alert "logout failure: " + status
+  logoutHandler: (response, status) =>
+    if status isnt 'error'
+      @publishEvent 'logoutSuccessful'
+    else
+      alert "logout failure: " + status
+    @publishEvent 'logoutDone'

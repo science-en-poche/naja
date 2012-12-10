@@ -191,6 +191,10 @@ window.require.define({"controllers/header_controller": function(exports, requir
       this.triggerLogout = __bind(this.triggerLogout, this);
 
       this.triggerLogin = __bind(this.triggerLogin, this);
+
+      this.logoutDone = __bind(this.logoutDone, this);
+
+      this.login = __bind(this.login, this);
       return HeaderController.__super__.constructor.apply(this, arguments);
     }
 
@@ -200,8 +204,24 @@ window.require.define({"controllers/header_controller": function(exports, requir
       this.view = new HeaderView({
         model: this.model
       });
+      this.subscribeEvent('login', this.login);
+      this.subscribeEvent('logoutDone', this.logoutDone);
       this.subscribeEvent('loginClicked', this.triggerLogin);
       return this.subscribeEvent('logoutClicked', this.triggerLogout);
+    };
+
+    HeaderController.prototype.login = function(user) {
+      if (!user.get('name')) {
+        alert('will redirect to settings');
+        return this.redirectTo('/settings/profile');
+      }
+    };
+
+    HeaderController.prototype.logoutDone = function() {
+      if (this.logoutFromTriggered) {
+        window.location.reload();
+      }
+      return this.logoutFromTriggered = false;
     };
 
     HeaderController.prototype.triggerLogin = function() {
@@ -209,6 +229,7 @@ window.require.define({"controllers/header_controller": function(exports, requir
     };
 
     HeaderController.prototype.triggerLogout = function() {
+      this.logoutFromTriggered = true;
       return this.publishEvent('!logout');
     };
 
@@ -245,22 +266,40 @@ window.require.define({"controllers/home_controller": function(exports, require,
     function HomeController() {
       this.show = __bind(this.show, this);
 
+      this.logout = __bind(this.logout, this);
+
       this.loginStatus = __bind(this.loginStatus, this);
+
+      this.checkUser = __bind(this.checkUser, this);
       HomeController.__super__.constructor.apply(this, arguments);
       _(this).extend($.Deferred());
       utils.deferMethods({
         deferred: this,
-        methods: ['show']
+        methods: ['show'],
+        onDeferral: this.checkUser
       });
     }
 
     HomeController.prototype.initialize = function() {
       HomeController.__super__.initialize.apply(this, arguments);
-      return this.subscribeEvent('loginStatus', this.loginStatus);
+      this.subscribeEvent('loginStatus', this.loginStatus);
+      return this.subscribeEvent('!logout', this.logout);
     };
 
-    HomeController.prototype.loginStatus = function() {
-      return this.resolve();
+    HomeController.prototype.checkUser = function() {
+      if (mediator.user) {
+        return this.resolve();
+      }
+    };
+
+    HomeController.prototype.loginStatus = function(status) {
+      if (status) {
+        return this.checkUser();
+      }
+    };
+
+    HomeController.prototype.logout = function() {
+      return this.redirectTo('/');
     };
 
     HomeController.prototype.show = function() {
@@ -369,6 +408,7 @@ window.require.define({"controllers/session_controller": function(exports, requi
 
     SessionController.prototype.triggerLogin = function(serviceProviderName) {
       var serviceProvider;
+      this.publishEvent('loginTriggered');
       serviceProvider = SessionController.serviceProviders[serviceProviderName];
       if (!serviceProvider.isLoaded()) {
         this.publishEvent('serviceProviderMissing', serviceProviderName);
@@ -392,6 +432,7 @@ window.require.define({"controllers/session_controller": function(exports, requi
     };
 
     SessionController.prototype.triggerLogout = function() {
+      this.publishEvent('logoutTriggered');
       return this.publishEvent('logout');
     };
 
@@ -437,6 +478,7 @@ window.require.define({"controllers/session_controller": function(exports, requi
 
 window.require.define({"controllers/welcome_controller": function(exports, require, module) {
   var Controller, WelcomeController, WelcomePageView,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -449,12 +491,31 @@ window.require.define({"controllers/welcome_controller": function(exports, requi
     __extends(WelcomeController, _super);
 
     function WelcomeController() {
+      this.login = __bind(this.login, this);
+
+      this.loginTriggered = __bind(this.loginTriggered, this);
       return WelcomeController.__super__.constructor.apply(this, arguments);
     }
 
     WelcomeController.prototype.title = 'Welcome';
 
     WelcomeController.prototype.historyURL = 'welcome';
+
+    WelcomeController.prototype.initialize = function() {
+      this.subscribeEvent('loginTriggered', this.loginTriggered);
+      return this.subscribeEvent('login', this.login);
+    };
+
+    WelcomeController.prototype.loginTriggered = function() {
+      return this.loginFromTriggered = true;
+    };
+
+    WelcomeController.prototype.login = function(user) {
+      if (this.loginFromTriggered && user.get('name')) {
+        this.redirectTo('/home');
+      }
+      return this.loginFromTriggered = false;
+    };
 
     WelcomeController.prototype.index = function() {
       return this.view = new WelcomePageView();
@@ -502,6 +563,8 @@ window.require.define({"lib/services/browserid": function(exports, require, modu
     BrowserID.prototype.baseUrl = config.api.versionRoot;
 
     function BrowserID() {
+      this.logoutHandler = __bind(this.logoutHandler, this);
+
       this.triggerLogout = __bind(this.triggerLogout, this);
 
       this.gotAssertion = __bind(this.gotAssertion, this);
@@ -595,503 +658,20 @@ window.require.define({"lib/services/browserid": function(exports, require, modu
 
     BrowserID.prototype.triggerLogout = function() {
       navigator.id.logout();
-      this.ajax('post', '/auth/browserid/logout').done(this.logoutSuccessCallback).fail(this.logoutErrorCallback);
+      this.ajax('post', '/auth/browserid/logout').always(this.logoutHandler);
       return false;
     };
 
-    BrowserID.prototype.logoutSuccessCallback = function() {
-      return false;
-    };
-
-    BrowserID.prototype.logoutErrorCallback = function(res, status, xhr) {
-      console.log(res);
-      return alert("logout failure: " + status);
+    BrowserID.prototype.logoutHandler = function(response, status) {
+      if (status !== 'error') {
+        this.publishEvent('logoutSuccessful');
+      } else {
+        alert("logout failure: " + status);
+      }
+      return this.publishEvent('logoutDone');
     };
 
     return BrowserID;
-
-  })(ServiceProvider);
-  
-}});
-
-window.require.define({"lib/services/facebook": function(exports, require, module) {
-  var Facebook, ServiceProvider, utils,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-  utils = require('lib/utils');
-
-  ServiceProvider = require('lib/services/service_provider');
-
-  Facebook = (function(_super) {
-    var facebookAppId, scope;
-
-    __extends(Facebook, _super);
-
-    facebookAppId = '115149731946795';
-
-    scope = 'user_likes';
-
-    Facebook.prototype.name = 'facebook';
-
-    Facebook.prototype.status = null;
-
-    Facebook.prototype.accessToken = null;
-
-    function Facebook() {
-      this.processUserData = __bind(this.processUserData, this);
-
-      this.facebookLogout = __bind(this.facebookLogout, this);
-
-      this.loginStatusAfterAbort = __bind(this.loginStatusAfterAbort, this);
-
-      this.loginHandler = __bind(this.loginHandler, this);
-
-      this.triggerLogin = __bind(this.triggerLogin, this);
-
-      this.loginStatusHandler = __bind(this.loginStatusHandler, this);
-
-      this.getLoginStatus = __bind(this.getLoginStatus, this);
-
-      this.saveAuthResponse = __bind(this.saveAuthResponse, this);
-
-      this.loadHandler = __bind(this.loadHandler, this);
-      Facebook.__super__.constructor.apply(this, arguments);
-      utils.deferMethods({
-        deferred: this,
-        methods: ['parse', 'subscribe', 'postToGraph', 'getAccumulatedInfo', 'getInfo'],
-        onDeferral: this.load
-      });
-      utils.wrapAccumulators(this, ['getAccumulatedInfo']);
-      this.subscribeEvent('logout', this.logout);
-    }
-
-    Facebook.prototype.load = function() {
-      if (this.state() === 'resolved' || this.loading) {
-        return;
-      }
-      this.loading = true;
-      window.fbAsyncInit = this.loadHandler;
-      return utils.loadLib('http://connect.facebook.net/en_US/all.js', null, this.reject);
-    };
-
-    Facebook.prototype.loadHandler = function() {
-      this.loading = false;
-      try {
-        delete window.fbAsyncInit;
-      } catch (error) {
-        window.fbAsyncInit = void 0;
-      }
-      FB.init({
-        appId: facebookAppId,
-        status: true,
-        cookie: true,
-        xfbml: false
-      });
-      this.registerHandlers();
-      return this.resolve();
-    };
-
-    Facebook.prototype.registerHandlers = function() {
-      this.subscribe('auth.logout', this.facebookLogout);
-      this.subscribe('edge.create', this.processLike);
-      return this.subscribe('comment.create', this.processComment);
-    };
-
-    Facebook.prototype.unregisterHandlers = function() {
-      this.unsubscribe('auth.logout', this.facebookLogout);
-      this.unsubscribe('edge.create', this.processLike);
-      return this.unsubscribe('comment.create', this.processComment);
-    };
-
-    Facebook.prototype.isLoaded = function() {
-      return Boolean(window.FB && FB.login);
-    };
-
-    Facebook.prototype.saveAuthResponse = function(response) {
-      var authResponse;
-      this.status = response.status;
-      authResponse = response.authResponse;
-      if (authResponse) {
-        return this.accessToken = authResponse.accessToken;
-      } else {
-        return this.accessToken = null;
-      }
-    };
-
-    Facebook.prototype.getLoginStatus = function(callback, force) {
-      if (callback == null) {
-        callback = this.loginStatusHandler;
-      }
-      if (force == null) {
-        force = false;
-      }
-      return FB.getLoginStatus(callback, force);
-    };
-
-    Facebook.prototype.loginStatusHandler = function(response) {
-      var authResponse;
-      this.saveAuthResponse(response);
-      authResponse = response.authResponse;
-      if (authResponse) {
-        this.publishSession(authResponse);
-        return this.getUserData();
-      } else {
-        return this.publishEvent('logout');
-      }
-    };
-
-    Facebook.prototype.triggerLogin = function(loginContext) {
-      return FB.login(_(this.loginHandler).bind(this, loginContext), {
-        scope: scope
-      });
-    };
-
-    Facebook.prototype.loginHandler = function(loginContext, response) {
-      var authResponse, eventPayload, loginStatusHandler;
-      this.saveAuthResponse(response);
-      authResponse = response.authResponse;
-      eventPayload = {
-        provider: this,
-        loginContext: loginContext
-      };
-      if (authResponse) {
-        this.publishEvent('loginSuccessful', eventPayload);
-        this.publishSession(authResponse);
-        return this.getUserData();
-      } else {
-        this.publishEvent('loginAbort', eventPayload);
-        loginStatusHandler = _(this.loginStatusAfterAbort).bind(this, loginContext);
-        return this.getLoginStatus(loginStatusHandler, true);
-      }
-    };
-
-    Facebook.prototype.loginStatusAfterAbort = function(loginContext, response) {
-      var authResponse, eventPayload;
-      this.saveAuthResponse(response);
-      authResponse = response.authResponse;
-      eventPayload = {
-        provider: this,
-        loginContext: loginContext
-      };
-      if (authResponse) {
-        this.publishEvent('loginSuccessful', eventPayload);
-        return this.publishSession(authResponse);
-      } else {
-        return this.publishEvent('loginFail', eventPayload);
-      }
-    };
-
-    Facebook.prototype.publishSession = function(authResponse) {
-      return this.publishEvent('serviceProviderSession', {
-        provider: this,
-        userId: authResponse.userID,
-        accessToken: authResponse.accessToken
-      });
-    };
-
-    Facebook.prototype.facebookLogout = function(response) {
-      return this.saveAuthResponse(response);
-    };
-
-    Facebook.prototype.logout = function() {
-      return this.status = this.accessToken = null;
-    };
-
-    Facebook.prototype.processLike = function(url) {
-      return this.publishEvent('facebook:like', url);
-    };
-
-    Facebook.prototype.processComment = function(comment) {
-      return this.publishEvent('facebook:comment', comment.href);
-    };
-
-    Facebook.prototype.parse = function(el) {
-      return FB.XFBML.parse(el);
-    };
-
-    Facebook.prototype.subscribe = function(eventType, handler) {
-      return FB.Event.subscribe(eventType, handler);
-    };
-
-    Facebook.prototype.unsubscribe = function(eventType, handler) {
-      return FB.Event.unsubscribe(eventType, handler);
-    };
-
-    Facebook.prototype.postToGraph = function(ogResource, data, callback) {
-      return FB.api(ogResource, 'post', data, function(response) {
-        if (callback) {
-          return callback(response);
-        }
-      });
-    };
-
-    Facebook.prototype.getAccumulatedInfo = function(urls, callback) {
-      if (typeof urls === 'string') {
-        urls = [urls];
-      }
-      urls = _(urls).reduce(function(memo, url) {
-        if (memo) {
-          memo += ',';
-        }
-        return memo += encodeURIComponent(url);
-      }, '');
-      return FB.api("?ids=" + urls, callback);
-    };
-
-    Facebook.prototype.getInfo = function(id, callback) {
-      return FB.api(id, callback);
-    };
-
-    Facebook.prototype.getUserData = function() {
-      return this.getInfo('/me', this.processUserData);
-    };
-
-    Facebook.prototype.processUserData = function(response) {
-      return this.publishEvent('userData', response);
-    };
-
-    Facebook.prototype.dispose = function() {
-      if (this.disposed) {
-        return;
-      }
-      this.unregisterHandlers();
-      delete this.status;
-      delete this.accessToken;
-      return Facebook.__super__.dispose.apply(this, arguments);
-    };
-
-    return Facebook;
-
-  })(ServiceProvider);
-  
-}});
-
-window.require.define({"lib/services/google": function(exports, require, module) {
-  var Google, ServiceProvider, utils,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-  utils = require('lib/utils');
-
-  ServiceProvider = require('lib/services/service_provider');
-
-  Google = (function(_super) {
-    var clientId, scopes;
-
-    __extends(Google, _super);
-
-    function Google() {
-      this.loadHandler = __bind(this.loadHandler, this);
-      return Google.__super__.constructor.apply(this, arguments);
-    }
-
-    clientId = '365800635017.apps.googleusercontent.com';
-
-    scopes = 'https://www.googleapis.com/auth/userinfo.profile';
-
-    Google.prototype.name = 'google';
-
-    Google.prototype.load = function() {
-      if (this.state() === 'resolved' || this.loading) {
-        return;
-      }
-      this.loading = true;
-      window.googleClientLoaded = this.loadHandler;
-      return utils.loadLib('https://apis.google.com/js/client.js?onload=googleClientLoaded', null, this.reject);
-    };
-
-    Google.prototype.loadHandler = function() {
-      try {
-        delete window.googleClientLoaded;
-      } catch (error) {
-        window.googleClientLoaded = void 0;
-      }
-      return gapi.auth.init(this.resolve);
-    };
-
-    Google.prototype.isLoaded = function() {
-      return Boolean(window.gapi && gapi.auth && gapi.auth.authorize);
-    };
-
-    Google.prototype.triggerLogin = function(loginContext) {
-      return gapi.auth.authorize({
-        client_id: clientId,
-        scope: scopes,
-        immediate: false
-      }, _(this.loginHandler).bind(this, loginContext));
-    };
-
-    Google.prototype.loginHandler = function(loginContext, authResponse) {
-      if (authResponse) {
-        this.publishEvent('loginSuccessful', {
-          provider: this,
-          loginContext: loginContext
-        });
-        return this.publishEvent('serviceProviderSession', {
-          provider: this,
-          accessToken: authResponse.access_token
-        });
-      } else {
-        return this.publishEvent('loginFail', {
-          provider: this,
-          loginContext: loginContext
-        });
-      }
-    };
-
-    Google.prototype.getLoginStatus = function(callback) {
-      return gapi.auth.authorize({
-        client_id: clientId,
-        scope: scopes,
-        immediate: true
-      }, callback);
-    };
-
-    Google.prototype.getUserInfo = function(callback) {
-      var request;
-      request = gapi.client.request({
-        path: '/oauth2/v2/userinfo'
-      });
-      return request.execute(callback);
-    };
-
-    Google.prototype.parsePlusOneButton = function(el) {
-      if (window.gapi && gapi.plusone && gapi.plusone.go) {
-        return gapi.plusone.go(el);
-      } else {
-        window.___gcfg = {
-          parsetags: 'explicit'
-        };
-        return utils.loadLib('https://apis.google.com/js/plusone.js', function() {
-          try {
-            delete window.___gcfg;
-          } catch (error) {
-            window.___gcfg = void 0;
-          }
-          return gapi.plusone.go(el);
-        });
-      }
-    };
-
-    return Google;
-
-  })(ServiceProvider);
-  
-}});
-
-window.require.define({"lib/services/ostio": function(exports, require, module) {
-  var Ostio, ServiceProvider, User, config, mediator,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-  config = require('config');
-
-  mediator = require('mediator');
-
-  ServiceProvider = require('lib/services/service_provider');
-
-  User = require('models/user');
-
-  module.exports = Ostio = (function(_super) {
-
-    __extends(Ostio, _super);
-
-    Ostio.prototype.baseUrl = config.api.root;
-
-    function Ostio() {
-      this.loginStatusHandler = __bind(this.loginStatusHandler, this);
-
-      this.loginHandler = __bind(this.loginHandler, this);
-
-      var authCallback;
-      Ostio.__super__.constructor.apply(this, arguments);
-      this.accessToken = localStorage.getItem('accessToken');
-      authCallback = _(this.loginHandler).bind(this, this.loginHandler);
-      mediator.subscribe('auth:callback:ostio', authCallback);
-    }
-
-    Ostio.prototype.load = function() {
-      this.resolve();
-      return this;
-    };
-
-    Ostio.prototype.isLoaded = function() {
-      return true;
-    };
-
-    Ostio.prototype.ajax = function(type, url, data) {
-      url = this.baseUrl + url;
-      if (this.accessToken) {
-        url += "?access_token=" + this.accessToken;
-      }
-      return $.ajax({
-        url: url,
-        data: data,
-        type: type,
-        dataType: 'json'
-      });
-    };
-
-    Ostio.prototype.triggerLogin = function(loginContext) {
-      var callback;
-      callback = _(this.loginHandler).bind(this, this.loginHandler);
-      return window.location = URL;
-    };
-
-    Ostio.prototype.loginHandler = function(loginContext, response) {
-      if (response) {
-        this.publishEvent('loginSuccessful', {
-          provider: this,
-          loginContext: loginContext
-        });
-        this.accessToken = response.accessToken;
-        localStorage.setItem('accessToken', this.accessToken);
-        return this.getUserData().done(this.processUserData);
-      } else {
-        return this.publishEvent('loginFail', {
-          provider: this,
-          loginContext: loginContext
-        });
-      }
-    };
-
-    Ostio.prototype.getUserData = function() {
-      return this.ajax('get', '/v1/users/me');
-    };
-
-    Ostio.prototype.processUserData = function(response) {
-      return this.publishEvent('userData', response);
-    };
-
-    Ostio.prototype.getLoginStatus = function(callback, force) {
-      if (callback == null) {
-        callback = this.loginStatusHandler;
-      }
-      if (force == null) {
-        force = false;
-      }
-      return this.getUserData().always(callback);
-    };
-
-    Ostio.prototype.loginStatusHandler = function(response, status) {
-      var parsed;
-      if (!response || status === 'error') {
-        return this.publishEvent('logout');
-      } else {
-        parsed = User.prototype.parse.call(null, response);
-        return this.publishEvent('serviceProviderSession', _.extend(parsed, {
-          provider: this,
-          userId: response.id,
-          accessToken: this.accessToken
-        }));
-      }
-    };
-
-    return Ostio;
 
   })(ServiceProvider);
   
@@ -1186,141 +766,6 @@ window.require.define({"lib/services/service_provider": function(exports, requir
         # etc.
   */
 
-  
-}});
-
-window.require.define({"lib/services/twitter": function(exports, require, module) {
-  var ServiceProvider, Twitter, mediator, utils,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-  mediator = require('mediator');
-
-  utils = require('lib/utils');
-
-  ServiceProvider = require('lib/services/service_provider');
-
-  Twitter = (function(_super) {
-    var consumerKey;
-
-    __extends(Twitter, _super);
-
-    consumerKey = 'w0uohox91TgpKETJmscYIQ';
-
-    Twitter.prototype.name = 'twitter';
-
-    function Twitter() {
-      this.loginStatusHandler = __bind(this.loginStatusHandler, this);
-
-      this.loginHandler = __bind(this.loginHandler, this);
-
-      this.sdkLoadHandler = __bind(this.sdkLoadHandler, this);
-      Twitter.__super__.constructor.apply(this, arguments);
-      this.subscribeEvent('!logout', this.logout);
-    }
-
-    Twitter.prototype.loadSDK = function() {
-      if (this.state() === 'resolved' || this.loading) {
-        return;
-      }
-      this.loading = true;
-      return utils.loadLib("http://platform.twitter.com/anywhere.js?id=" + consumerKey + "&v=1", this.sdkLoadHandler, this.reject);
-    };
-
-    Twitter.prototype.sdkLoadHandler = function() {
-      var _this = this;
-      this.loading = false;
-      return twttr.anywhere(function(T) {
-        _this.publishEvent('sdkLoaded');
-        _this.T = T;
-        return _this.resolve();
-      });
-    };
-
-    Twitter.prototype.isLoaded = function() {
-      return Boolean(window.twttr);
-    };
-
-    Twitter.prototype.publish = function(event, callback) {
-      return this.T.trigger(event, callback);
-    };
-
-    Twitter.prototype.subscribe = function(event, callback) {
-      return this.T.bind(event, callback);
-    };
-
-    Twitter.prototype.unsubscribe = function(event) {
-      return this.T.unbind(event);
-    };
-
-    Twitter.prototype.triggerLogin = function(loginContext) {
-      var callback;
-      callback = _(this.loginHandler).bind(this, loginContext);
-      this.T.signIn();
-      this.subscribe('authComplete', function(event, currentUser, accessToken) {
-        return callback({
-          currentUser: currentUser,
-          accessToken: accessToken
-        });
-      });
-      return this.subscribe('signOut', function() {
-        return callback();
-      });
-    };
-
-    Twitter.prototype.publishSession = function(response) {
-      var user;
-      user = response.currentUser;
-      this.publishEvent('serviceProviderSession', {
-        provider: this,
-        userId: user.id,
-        accessToken: response.accessToken || twttr.anywhere.token
-      });
-      return this.publishEvent('userData', user.attributes);
-    };
-
-    Twitter.prototype.loginHandler = function(loginContext, response) {
-      if (response) {
-        this.publishEvent('loginSuccessful', {
-          provider: this,
-          loginContext: loginContext
-        });
-        return this.publishSession(response);
-      } else {
-        return this.publishEvent('loginFail', {
-          provider: this,
-          loginContext: loginContext
-        });
-      }
-    };
-
-    Twitter.prototype.getLoginStatus = function(callback, force) {
-      if (callback == null) {
-        callback = this.loginStatusHandler;
-      }
-      if (force == null) {
-        force = false;
-      }
-      return callback(this.T);
-    };
-
-    Twitter.prototype.loginStatusHandler = function(response) {
-      if (response.currentUser) {
-        return this.publishSession(response);
-      } else {
-        return this.publishEvent('logout');
-      }
-    };
-
-    Twitter.prototype.logout = function() {
-      var _ref;
-      return typeof twttr !== "undefined" && twttr !== null ? (_ref = twttr.anywhere) != null ? typeof _ref.signOut === "function" ? _ref.signOut() : void 0 : void 0 : void 0;
-    };
-
-    return Twitter;
-
-  })(ServiceProvider);
   
 }});
 
@@ -1755,8 +1200,7 @@ window.require.define({"routes": function(exports, require, module) {
   
   module.exports = function(match) {
     match('', 'welcome#index');
-    match('home', 'home#show');
-    return match('settings', 'home#show');
+    return match('home', 'home#show');
   };
   
 }});

@@ -8,23 +8,25 @@ module.exports = class HeaderController extends Controller
     @model = new Header()
     @view = new HeaderView({@model})
 
-    #@subscribeEvent 'login', @login
-    #@subscribeEvent '!logout', @logout
+    @subscribeEvent 'login', @login
+    @subscribeEvent 'logoutDone', @logoutDone
 
     @subscribeEvent 'loginClicked', @triggerLogin
     @subscribeEvent 'logoutClicked', @triggerLogout
 
-  #login: (user) =>
-    #if !user.name
-      #@redirectTo '/settings/profile'
-    #else
-      #@redirectTo '/home'
+  login: (user) =>
+    if !user.get('name')
+      alert('will redirect to settings')
+      @redirectTo '/settings/profile'
 
-  #logout: =>
-    #@redirectTo '/'
+  logoutDone: =>
+    if @logoutFromTriggered
+      window.location.reload()
+    @logoutFromTriggered = no
 
   triggerLogin: =>
     @publishEvent '!login', 'browserid'
 
   triggerLogout: =>
+    @logoutFromTriggered = yes
     @publishEvent '!logout'

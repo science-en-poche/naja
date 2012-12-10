@@ -17,13 +17,23 @@ module.exports = class HomeController extends Controller
     utils.deferMethods
       deferred: this
       methods: ['show']
+      onDeferral: @checkUser
 
   initialize: ->
     super
     @subscribeEvent 'loginStatus', @loginStatus
+    @subscribeEvent '!logout', @logout
 
-  loginStatus: =>
-    @resolve()
+  checkUser: =>
+    if mediator.user
+      @resolve()
+
+  loginStatus: (status) =>
+    if status
+      @checkUser()
+
+  logout: =>
+    @redirectTo '/'
 
   show: =>
     @model = new User({email: mediator.user.get('email')})
