@@ -16,7 +16,7 @@
 
           <div class="btn-group pull-right">
             <button class="btn dropdown-toggle" data-toggle="dropdown">
-              <i class="icon-user"></i> {{email}}
+              <i class="icon-user"></i> {{#if name}}{{name}}{{else}}{{email}}{{/if}}
               <span class="caret"></span>
             </button>
             <ul class="dropdown-menu">

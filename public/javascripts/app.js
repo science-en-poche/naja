@@ -1645,16 +1645,38 @@ window.require.define({"views/templates/header": function(exports, require, modu
     return buffer;}
   function program2(depth0,data) {
     
-    var buffer = "", stack1;
+    var buffer = "", stack1, stack2;
     buffer += "\n\n          <div class=\"btn-group pull-right\">\n            <button class=\"btn dropdown-toggle\" data-toggle=\"dropdown\">\n              <i class=\"icon-user\"></i> ";
+    foundHelper = helpers.name;
+    stack1 = foundHelper || depth0.name;
+    stack2 = helpers['if'];
+    tmp1 = self.program(3, program3, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.program(5, program5, data);
+    stack1 = stack2.call(depth0, stack1, tmp1);
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += "\n              <span class=\"caret\"></span>\n            </button>\n            <ul class=\"dropdown-menu\">\n              <li><a href=\"/settings\"><i class=\"icon-cog\"></i> Settings </a></li>\n              <li class=\"divider\"></li>\n              <li><a href=\"#\" class=\"browserid-logout\"><i class=\"icon-off\"></i> Sign Out </a></li>\n            </ul>\n          </div>\n\n        ";
+    return buffer;}
+  function program3(depth0,data) {
+    
+    var stack1;
+    foundHelper = helpers.name;
+    stack1 = foundHelper || depth0.name;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "name", { hash: {} }); }
+    return escapeExpression(stack1);}
+
+  function program5(depth0,data) {
+    
+    var stack1;
     foundHelper = helpers.email;
     stack1 = foundHelper || depth0.email;
     if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
     else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "email", { hash: {} }); }
-    buffer += escapeExpression(stack1) + "\n              <span class=\"caret\"></span>\n            </button>\n            <ul class=\"dropdown-menu\">\n              <li><a href=\"/settings\"><i class=\"icon-cog\"></i> Settings </a></li>\n              <li class=\"divider\"></li>\n              <li><a href=\"#\" class=\"browserid-logout\"><i class=\"icon-off\"></i> Sign Out </a></li>\n            </ul>\n          </div>\n\n        ";
-    return buffer;}
+    return escapeExpression(stack1);}
 
-  function program4(depth0,data) {
+  function program7(depth0,data) {
     
     
     return "\n          <button class=\"btn btn-primary pull-right browserid-login\">Log in with BrowserID</button>\n      ";}
@@ -1665,7 +1687,7 @@ window.require.define({"views/templates/header": function(exports, require, modu
     tmp1 = self.program(1, program1, data);
     tmp1.hash = {};
     tmp1.fn = tmp1;
-    tmp1.inverse = self.program(4, program4, data);
+    tmp1.inverse = self.program(7, program7, data);
     if(foundHelper && typeof stack1 === functionType) { stack1 = stack1.call(depth0, tmp1); }
     else { stack1 = blockHelperMissing.call(depth0, stack1, tmp1); }
     if(stack1 || stack1 === 0) { buffer += stack1; }
