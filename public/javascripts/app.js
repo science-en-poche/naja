@@ -957,6 +957,14 @@ window.require.define({"lib/view_helper": function(exports, require, module) {
     }
   });
 
+  Handlebars.registerHelper('if_gt_one', function(context, options) {
+    if (!context || Handlebars.Utils.isEmpty(context) || context <= 1) {
+      return options.inverse(this);
+    } else {
+      return options.fn(this);
+    }
+  });
+
   Handlebars.registerHelper('with', function(context, options) {
     if (!context || Handlebars.Utils.isEmpty(context)) {
       return options.inverse(this);
@@ -1588,7 +1596,7 @@ window.require.define({"views/login_view": function(exports, require, module) {
 window.require.define({"views/templates/exp": function(exports, require, module) {
   module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
     helpers = helpers || Handlebars.helpers;
-    var buffer = "", stack1, stack2, foundHelper, tmp1, self=this, functionType="function", helperMissing=helpers.helperMissing, undef=void 0, escapeExpression=this.escapeExpression;
+    var buffer = "", stack1, stack2, foundHelper, tmp1, self=this, functionType="function", helperMissing=helpers.helperMissing, undef=void 0, escapeExpression=this.escapeExpression, blockHelperMissing=helpers.blockHelperMissing;
 
   function program1(depth0,data) {
     
@@ -1610,6 +1618,41 @@ window.require.define({"views/templates/exp": function(exports, require, module)
 
   function program5(depth0,data) {
     
+    var buffer = "", stack1, stack2;
+    foundHelper = helpers.n_results;
+    stack1 = foundHelper || depth0.n_results;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "n_results", { hash: {} }); }
+    buffer += escapeExpression(stack1) + " ";
+    foundHelper = helpers.n_results;
+    stack1 = foundHelper || depth0.n_results;
+    foundHelper = helpers.if_gt_one;
+    stack2 = foundHelper || depth0.if_gt_one;
+    tmp1 = self.program(6, program6, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.program(8, program8, data);
+    if(foundHelper && typeof stack2 === functionType) { stack1 = stack2.call(depth0, stack1, tmp1); }
+    else { stack1 = blockHelperMissing.call(depth0, stack2, stack1, tmp1); }
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    return buffer;}
+  function program6(depth0,data) {
+    
+    
+    return "results";}
+
+  function program8(depth0,data) {
+    
+    
+    return "result";}
+
+  function program10(depth0,data) {
+    
+    
+    return "No results yet";}
+
+  function program12(depth0,data) {
+    
     var stack1;
     foundHelper = helpers.description;
     stack1 = foundHelper || depth0.description;
@@ -1617,7 +1660,7 @@ window.require.define({"views/templates/exp": function(exports, require, module)
     else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "description", { hash: {} }); }
     return escapeExpression(stack1);}
 
-  function program7(depth0,data) {
+  function program14(depth0,data) {
     
     
     return "No description";}
@@ -1657,14 +1700,24 @@ window.require.define({"views/templates/exp": function(exports, require, module)
     stack1 = foundHelper || depth0.name;
     if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
     else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "name", { hash: {} }); }
-    buffer += escapeExpression(stack1) + "</a></h4>\n  ";
-    foundHelper = helpers.description;
-    stack1 = foundHelper || depth0.description;
+    buffer += escapeExpression(stack1) + "</a> <small class=\"pull-right\">";
+    foundHelper = helpers.n_results;
+    stack1 = foundHelper || depth0.n_results;
     stack2 = helpers['if'];
     tmp1 = self.program(5, program5, data);
     tmp1.hash = {};
     tmp1.fn = tmp1;
-    tmp1.inverse = self.program(7, program7, data);
+    tmp1.inverse = self.program(10, program10, data);
+    stack1 = stack2.call(depth0, stack1, tmp1);
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += "</small></h4>\n  ";
+    foundHelper = helpers.description;
+    stack1 = foundHelper || depth0.description;
+    stack2 = helpers['if'];
+    tmp1 = self.program(12, program12, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.program(14, program14, data);
     stack1 = stack2.call(depth0, stack1, tmp1);
     if(stack1 || stack1 === 0) { buffer += stack1; }
     buffer += "\n</div>\n";

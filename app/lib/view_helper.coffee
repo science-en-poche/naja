@@ -17,6 +17,13 @@ Handlebars.registerHelper 'if_logged_in', (options) ->
   else
     options.inverse(this)
 
+# Test for a numeric value
+Handlebars.registerHelper 'if_gt_one', (context, options) ->
+  if not context or Handlebars.Utils.isEmpty(context) or context <= 1
+    options.inverse(this)
+  else
+    options.fn(this)
+
 # Map helpers
 # -----------
 

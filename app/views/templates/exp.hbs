@@ -2,6 +2,6 @@
   <img class="media-object" src="https://mehho.net/sl/seb-avatar.png">
 </a>
 <div class="media-body">
-  <h4 class="media-heading"><a href="/{{#with owner}}{{email}}{{/with}}/{{name}}">{{name}}</a></h4>
+  <h4 class="media-heading"><a href="/{{#with owner}}{{email}}{{/with}}/{{name}}">{{name}}</a> <small class="pull-right">{{#if n_results}}{{n_results}} {{#if_gt_one n_results}}results{{else}}result{{/if_gt_one}}{{else}}No results yet{{/if}}</small></h4>
   {{#if description}}{{description}}{{else}}No description{{/if}}
 </div>
