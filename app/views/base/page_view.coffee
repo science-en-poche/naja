@@ -2,7 +2,6 @@ View = require 'views/base/view'
 
 module.exports = class PageView extends View
   container: '#page-container'
-  autoRender: yes
   renderedSubviews: no
 
   initialize: ->
@@ -21,3 +20,8 @@ module.exports = class PageView extends View
     unless @renderedSubviews
       @renderSubviews()
       @renderedSubviews = yes
+
+  dispose: ->
+    return if @disposed
+    delete this[attr] for attr in ['rendered', 'renderedSubviews']
+    super

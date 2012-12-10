@@ -40,7 +40,7 @@ module.exports = class BrowserID extends ServiceProvider
       @getUserData().always([@loginStatusHandler, @processUserData])
 
   getUserData: ->
-    @ajax('get', '/user/me')
+    @ajax('get', '/users/me')
 
   processUserData: (response, status) =>
     if not response or status is 'error'
@@ -57,6 +57,7 @@ module.exports = class BrowserID extends ServiceProvider
       @publishEvent 'serviceProviderSession',
         provider: this
         email: response.email
+        name: response.name
 
   gotAssertion: (assertion) =>
     if assertion

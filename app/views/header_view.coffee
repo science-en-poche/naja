@@ -13,11 +13,11 @@ module.exports = class HeaderView extends View
     @subscribeEvent 'loginStatus', @render
     @subscribeEvent 'startupController', @render
 
-    @delegate 'click', '.browserid-login', @triggerLogin
-    @delegate 'click', '.browserid-logout', @triggerLogout
+    @delegate 'click', '.browserid-login', @loginClicked
+    @delegate 'click', '.browserid-logout', @logoutClicked
 
-  triggerLogin: =>
-    @publishEvent '!login', 'browserid'
+  loginClicked: =>
+    @publishEvent 'loginClicked'
 
-  triggerLogout: =>
-    @publishEvent '!logout'
+  logoutClicked: =>
+    @publishEvent 'logoutClicked'
