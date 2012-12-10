@@ -15,7 +15,7 @@ module.exports = class WelcomeController extends Controller
 
   login: (user) =>
     if @loginFromTriggered and user.get('name')
-      @redirectTo '/home'
+      @redirectTo "/#{user.get('email')}"
     @loginFromTriggered = no
 
   index: ->

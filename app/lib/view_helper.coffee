@@ -50,3 +50,11 @@ Handlebars.registerHelper 'with_config', (options) ->
 Handlebars.registerHelper 'with_user', (options) ->
   context = mediator.user.getAttributes()
   Handlebars.helpers.with.call(this, context, options)
+
+# Gravatar
+Handlebars.registerHelper 'gravatar', (options) ->
+  "https://secure.gravatar.com/avatar/#{options.fn this}?s=420
+&d=https://a248.e.akamai.net/assets.github.com
+%2Fimages%2Fgravatars%2Fgravatar-user-420.png"
+
+
