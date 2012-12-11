@@ -22,7 +22,6 @@ module.exports = class UsersController extends Controller
   initialize: ->
     super
     @subscribeEvent 'loginStatus', @loginStatus
-    @subscribeEvent 'logout', @logout
 
   checkUser: =>
     if mediator.user
@@ -31,9 +30,6 @@ module.exports = class UsersController extends Controller
   loginStatus: (status) =>
     if status
       @checkUser()
-
-  logout: =>
-    @redirectTo '/'
 
   show: (params) =>
     @model = new User({email: params.email})

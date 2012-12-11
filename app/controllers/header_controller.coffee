@@ -18,13 +18,17 @@ module.exports = class HeaderController extends Controller
     if !user.get('name')
       alert('will redirect to settings')
       @redirectTo '/settings/profile'
+    if @loginFromTriggered
+      @loginFromTriggered =no
+      window.location.reload()
 
   logoutDone: =>
     if @logoutFromTriggered
+      @logoutFromTriggered = no
       window.location.reload()
-    @logoutFromTriggered = no
 
   triggerLogin: =>
+    @loginFromTriggered = yes
     @publishEvent '!login', 'browserid'
 
   triggerLogout: =>

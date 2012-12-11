@@ -213,18 +213,23 @@ window.require.define({"controllers/header_controller": function(exports, requir
     HeaderController.prototype.login = function(user) {
       if (!user.get('name')) {
         alert('will redirect to settings');
-        return this.redirectTo('/settings/profile');
+        this.redirectTo('/settings/profile');
+      }
+      if (this.loginFromTriggered) {
+        this.loginFromTriggered = false;
+        return window.location.reload();
       }
     };
 
     HeaderController.prototype.logoutDone = function() {
       if (this.logoutFromTriggered) {
-        window.location.reload();
+        this.logoutFromTriggered = false;
+        return window.location.reload();
       }
-      return this.logoutFromTriggered = false;
     };
 
     HeaderController.prototype.triggerLogin = function() {
+      this.loginFromTriggered = true;
       return this.publishEvent('!login', 'browserid');
     };
 
@@ -424,8 +429,6 @@ window.require.define({"controllers/users_controller": function(exports, require
     function UsersController() {
       this.show = __bind(this.show, this);
 
-      this.logout = __bind(this.logout, this);
-
       this.loginStatus = __bind(this.loginStatus, this);
 
       this.checkUser = __bind(this.checkUser, this);
@@ -440,8 +443,7 @@ window.require.define({"controllers/users_controller": function(exports, require
 
     UsersController.prototype.initialize = function() {
       UsersController.__super__.initialize.apply(this, arguments);
-      this.subscribeEvent('loginStatus', this.loginStatus);
-      return this.subscribeEvent('logout', this.logout);
+      return this.subscribeEvent('loginStatus', this.loginStatus);
     };
 
     UsersController.prototype.checkUser = function() {
@@ -454,10 +456,6 @@ window.require.define({"controllers/users_controller": function(exports, require
       if (status) {
         return this.checkUser();
       }
-    };
-
-    UsersController.prototype.logout = function() {
-      return this.redirectTo('/');
     };
 
     UsersController.prototype.show = function(params) {
@@ -1791,7 +1789,7 @@ window.require.define({"views/templates/user_page": function(exports, require, m
     var buffer = "", stack1, foundHelper, self=this, functionType="function", helperMissing=helpers.helperMissing, undef=void 0, escapeExpression=this.escapeExpression;
 
 
-    buffer += "<div class=\"row\">\n  <div class=\"span3 user-container\"></div>\n  <div class=\"span9 user-exp-list-container\">\n    <div class=\"page-header\">\n      <h2>";
+    buffer += "<div class=\"row-fluid\">\n  <div class=\"span3 user-container\"></div>\n  <div class=\"span6 user-exp-list-container\">\n    <div class=\"page-header\">\n      <h2>";
     foundHelper = helpers.name;
     stack1 = foundHelper || depth0.name;
     if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
