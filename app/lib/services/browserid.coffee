@@ -55,9 +55,7 @@ module.exports = class BrowserID extends ServiceProvider
       @publishEvent 'logout'
     else
       @publishEvent 'serviceProviderSession',
-        provider: this
-        email: response.email
-        name: response.name
+        _.extend provider: this, response
 
   gotAssertion: (assertion) =>
     if assertion

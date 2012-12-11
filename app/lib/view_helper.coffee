@@ -57,4 +57,8 @@ Handlebars.registerHelper 'gravatar', (options) ->
 &d=https://a248.e.akamai.net/assets.github.com
 %2Fimages%2Fgravatars%2Fgravatar-user-420.png"
 
-
+# Gravatar small
+Handlebars.registerHelper 'gravatar_small', (options) ->
+  "https://secure.gravatar.com/avatar/#{options.fn this}?s=48
+&d=https://a248.e.akamai.net/assets.github.com
+%2Fimages%2Fgravatars%2Fgravatar-user-420.png"

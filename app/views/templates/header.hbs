@@ -8,21 +8,22 @@
         <span class="icon-bar"></span>
       </a>
 
-      <a class="brand" href="#">Naja</a>
+      <a class="brand" href="/">Naja</a>
 
       {{#if_logged_in}}
 
         {{#with_user}}
 
-          <div class="btn-group pull-right">
-            <button class="btn dropdown-toggle" data-toggle="dropdown">
-              <i class="icon-user"></i> {{#if name}}{{name}}{{else}}{{email}}{{/if}}
-              <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu">
-              <li><a href="/settings"><i class="icon-cog"></i> Settings </a></li>
-              <li class="divider"></li>
-              <li><a href="#" class="browserid-logout"><i class="icon-off"></i> Sign Out </a></li>
+          <div class="pull-right">
+            <ul class="nav">
+              <li>
+                <a href="/{{email}}">
+                  <img class="img-rounded" height="24" width="24" src="{{#gravatar_small}}{{gravatar_id}}{{/gravatar_small}}"> {{#if name}}{{name}}{{else}}{{email}}{{/if}}
+                </a>
+              </li>
+              <li><a href="/new"><i class="icon-plus-sign icon-white"></i> new exp</a></li>
+              <li><a href="/settings"><i class="icon-cog icon-white"></i> settings</a></li>
+              <li><a href="#" class="browserid-logout"><i class="icon-off icon-white"></i> logout</a></li>
             </ul>
           </div>
 
@@ -34,7 +35,6 @@
 
       <div class="nav-collapse collapse">
         <ul class="nav">
-          <li class="active"><a href="#">Home</a></li>
           <li><a href="#">About</a></li>
           <li><a href="#">Contact</a></li>
         </ul>

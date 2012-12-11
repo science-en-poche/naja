@@ -172,7 +172,7 @@ window.require.define({"controllers/base/controller": function(exports, require,
 }});
 
 window.require.define({"controllers/header_controller": function(exports, require, module) {
-  var Controller, Header, HeaderController, HeaderView,
+  var Controller, Header, HeaderController, HeaderView, mediator,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -182,6 +182,8 @@ window.require.define({"controllers/header_controller": function(exports, requir
   Header = require('models/header');
 
   HeaderView = require('views/header_view');
+
+  mediator = require('mediator');
 
   module.exports = HeaderController = (function(_super) {
 
@@ -422,41 +424,14 @@ window.require.define({"controllers/users_controller": function(exports, require
 
     __extends(UsersController, _super);
 
+    function UsersController() {
+      this.show = __bind(this.show, this);
+      return UsersController.__super__.constructor.apply(this, arguments);
+    }
+
     UsersController.prototype.title = 'User';
 
     UsersController.prototype.historyURL = 'user';
-
-    function UsersController() {
-      this.show = __bind(this.show, this);
-
-      this.loginStatus = __bind(this.loginStatus, this);
-
-      this.checkUser = __bind(this.checkUser, this);
-      UsersController.__super__.constructor.apply(this, arguments);
-      _(this).extend($.Deferred());
-      utils.deferMethods({
-        deferred: this,
-        methods: ['show'],
-        onDeferral: this.checkUser
-      });
-    }
-
-    UsersController.prototype.initialize = function() {
-      UsersController.__super__.initialize.apply(this, arguments);
-      return this.subscribeEvent('loginStatus', this.loginStatus);
-    };
-
-    UsersController.prototype.checkUser = function() {
-      if (mediator.user) {
-        return this.resolve();
-      }
-    };
-
-    UsersController.prototype.loginStatus = function(status) {
-      if (status) {
-        return this.checkUser();
-      }
-    };
 
     UsersController.prototype.show = function(params) {
       this.model = new User({
@@ -638,11 +613,9 @@ window.require.define({"lib/services/browserid": function(exports, require, modu
       if (!response || status === 'error') {
         return this.publishEvent('logout');
       } else {
-        return this.publishEvent('serviceProviderSession', {
-          provider: this,
-          email: response.email,
-          name: response.name
-        });
+        return this.publishEvent('serviceProviderSession', _.extend({
+          provider: this
+        }, response));
       }
     };
 
@@ -993,6 +966,10 @@ window.require.define({"lib/view_helper": function(exports, require, module) {
 
   Handlebars.registerHelper('gravatar', function(options) {
     return "https://secure.gravatar.com/avatar/" + (options.fn(this)) + "?s=420&d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-user-420.png";
+  });
+
+  Handlebars.registerHelper('gravatar_small', function(options) {
+    return "https://secure.gravatar.com/avatar/" + (options.fn(this)) + "?s=48&d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-user-420.png";
   });
   
 }});
@@ -1692,19 +1669,43 @@ window.require.define({"views/templates/header": function(exports, require, modu
   function program2(depth0,data) {
     
     var buffer = "", stack1, stack2;
-    buffer += "\n\n          <div class=\"btn-group pull-right\">\n            <button class=\"btn dropdown-toggle\" data-toggle=\"dropdown\">\n              <i class=\"icon-user\"></i> ";
-    foundHelper = helpers.name;
-    stack1 = foundHelper || depth0.name;
-    stack2 = helpers['if'];
+    buffer += "\n\n          <div class=\"pull-right\">\n            <ul class=\"nav\">\n              <li>\n                <a href=\"/";
+    foundHelper = helpers.email;
+    stack1 = foundHelper || depth0.email;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "email", { hash: {} }); }
+    buffer += escapeExpression(stack1) + "\">\n                  <img class=\"img-rounded\" height=\"24\" width=\"24\" src=\"";
+    foundHelper = helpers.gravatar_small;
+    stack1 = foundHelper || depth0.gravatar_small;
     tmp1 = self.program(3, program3, data);
     tmp1.hash = {};
     tmp1.fn = tmp1;
-    tmp1.inverse = self.program(5, program5, data);
+    tmp1.inverse = self.noop;
+    if(foundHelper && typeof stack1 === functionType) { stack1 = stack1.call(depth0, tmp1); }
+    else { stack1 = blockHelperMissing.call(depth0, stack1, tmp1); }
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += "\"> ";
+    foundHelper = helpers.name;
+    stack1 = foundHelper || depth0.name;
+    stack2 = helpers['if'];
+    tmp1 = self.program(5, program5, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.program(7, program7, data);
     stack1 = stack2.call(depth0, stack1, tmp1);
     if(stack1 || stack1 === 0) { buffer += stack1; }
-    buffer += "\n              <span class=\"caret\"></span>\n            </button>\n            <ul class=\"dropdown-menu\">\n              <li><a href=\"/settings\"><i class=\"icon-cog\"></i> Settings </a></li>\n              <li class=\"divider\"></li>\n              <li><a href=\"#\" class=\"browserid-logout\"><i class=\"icon-off\"></i> Sign Out </a></li>\n            </ul>\n          </div>\n\n        ";
+    buffer += "\n                </a>\n              </li>\n              <li><a href=\"/new\"><i class=\"icon-plus-sign icon-white\"></i> new exp</a></li>\n              <li><a href=\"/settings\"><i class=\"icon-cog icon-white\"></i> settings</a></li>\n              <li><a href=\"#\" class=\"browserid-logout\"><i class=\"icon-off icon-white\"></i> logout</a></li>\n            </ul>\n          </div>\n\n        ";
     return buffer;}
   function program3(depth0,data) {
+    
+    var stack1;
+    foundHelper = helpers.gravatar_id;
+    stack1 = foundHelper || depth0.gravatar_id;
+    if(typeof stack1 === functionType) { stack1 = stack1.call(depth0, { hash: {} }); }
+    else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "gravatar_id", { hash: {} }); }
+    return escapeExpression(stack1);}
+
+  function program5(depth0,data) {
     
     var stack1;
     foundHelper = helpers.name;
@@ -1713,7 +1714,7 @@ window.require.define({"views/templates/header": function(exports, require, modu
     else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "name", { hash: {} }); }
     return escapeExpression(stack1);}
 
-  function program5(depth0,data) {
+  function program7(depth0,data) {
     
     var stack1;
     foundHelper = helpers.email;
@@ -1722,22 +1723,22 @@ window.require.define({"views/templates/header": function(exports, require, modu
     else if(stack1=== undef) { stack1 = helperMissing.call(depth0, "email", { hash: {} }); }
     return escapeExpression(stack1);}
 
-  function program7(depth0,data) {
+  function program9(depth0,data) {
     
     
     return "\n          <button class=\"btn btn-primary pull-right browserid-login\">Log in with BrowserID</button>\n      ";}
 
-    buffer += "<div class=\"navbar navbar-inverse navbar-fixed-top\">\n  <div class=\"navbar-inner\">\n    <div class=\"container\">\n\n      <a class=\"btn btn-navbar\" data-toggle=\"collapse\" data-target=\".nav-collapse\">\n        <span class=\"icon-bar\"></span>\n        <span class=\"icon-bar\"></span>\n        <span class=\"icon-bar\"></span>\n      </a>\n\n      <a class=\"brand\" href=\"#\">Naja</a>\n\n      ";
+    buffer += "<div class=\"navbar navbar-inverse navbar-fixed-top\">\n  <div class=\"navbar-inner\">\n    <div class=\"container\">\n\n      <a class=\"btn btn-navbar\" data-toggle=\"collapse\" data-target=\".nav-collapse\">\n        <span class=\"icon-bar\"></span>\n        <span class=\"icon-bar\"></span>\n        <span class=\"icon-bar\"></span>\n      </a>\n\n      <a class=\"brand\" href=\"/\">Naja</a>\n\n      ";
     foundHelper = helpers.if_logged_in;
     stack1 = foundHelper || depth0.if_logged_in;
     tmp1 = self.program(1, program1, data);
     tmp1.hash = {};
     tmp1.fn = tmp1;
-    tmp1.inverse = self.program(7, program7, data);
+    tmp1.inverse = self.program(9, program9, data);
     if(foundHelper && typeof stack1 === functionType) { stack1 = stack1.call(depth0, tmp1); }
     else { stack1 = blockHelperMissing.call(depth0, stack1, tmp1); }
     if(stack1 || stack1 === 0) { buffer += stack1; }
-    buffer += "\n\n      <div class=\"nav-collapse collapse\">\n        <ul class=\"nav\">\n          <li class=\"active\"><a href=\"#\">Home</a></li>\n          <li><a href=\"#\">About</a></li>\n          <li><a href=\"#\">Contact</a></li>\n        </ul>\n      </div>\n\n    </div>\n  </div>\n</div>\n";
+    buffer += "\n\n      <div class=\"nav-collapse collapse\">\n        <ul class=\"nav\">\n          <li><a href=\"#\">About</a></li>\n          <li><a href=\"#\">Contact</a></li>\n        </ul>\n      </div>\n\n    </div>\n  </div>\n</div>\n";
     return buffer;});
 }});
 

@@ -12149,6 +12149,2166 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
 
 }).call(this);;
 
+/* ===================================================
+ * bootstrap-transition.js v2.2.2
+ * http://twitter.github.com/bootstrap/javascript.html#transitions
+ * ===================================================
+ * Copyright 2012 Twitter, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ========================================================== */
+
+
+!function ($) {
+
+  "use strict"; // jshint ;_;
+
+
+  /* CSS TRANSITION SUPPORT (http://www.modernizr.com/)
+   * ======================================================= */
+
+  $(function () {
+
+    $.support.transition = (function () {
+
+      var transitionEnd = (function () {
+
+        var el = document.createElement('bootstrap')
+          , transEndEventNames = {
+               'WebkitTransition' : 'webkitTransitionEnd'
+            ,  'MozTransition'    : 'transitionend'
+            ,  'OTransition'      : 'oTransitionEnd otransitionend'
+            ,  'transition'       : 'transitionend'
+            }
+          , name
+
+        for (name in transEndEventNames){
+          if (el.style[name] !== undefined) {
+            return transEndEventNames[name]
+          }
+        }
+
+      }())
+
+      return transitionEnd && {
+        end: transitionEnd
+      }
+
+    })()
+
+  })
+
+}(window.jQuery);/* ==========================================================
+ * bootstrap-alert.js v2.2.2
+ * http://twitter.github.com/bootstrap/javascript.html#alerts
+ * ==========================================================
+ * Copyright 2012 Twitter, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ========================================================== */
+
+
+!function ($) {
+
+  "use strict"; // jshint ;_;
+
+
+ /* ALERT CLASS DEFINITION
+  * ====================== */
+
+  var dismiss = '[data-dismiss="alert"]'
+    , Alert = function (el) {
+        $(el).on('click', dismiss, this.close)
+      }
+
+  Alert.prototype.close = function (e) {
+    var $this = $(this)
+      , selector = $this.attr('data-target')
+      , $parent
+
+    if (!selector) {
+      selector = $this.attr('href')
+      selector = selector && selector.replace(/.*(?=#[^\s]*$)/, '') //strip for ie7
+    }
+
+    $parent = $(selector)
+
+    e && e.preventDefault()
+
+    $parent.length || ($parent = $this.hasClass('alert') ? $this : $this.parent())
+
+    $parent.trigger(e = $.Event('close'))
+
+    if (e.isDefaultPrevented()) return
+
+    $parent.removeClass('in')
+
+    function removeElement() {
+      $parent
+        .trigger('closed')
+        .remove()
+    }
+
+    $.support.transition && $parent.hasClass('fade') ?
+      $parent.on($.support.transition.end, removeElement) :
+      removeElement()
+  }
+
+
+ /* ALERT PLUGIN DEFINITION
+  * ======================= */
+
+  var old = $.fn.alert
+
+  $.fn.alert = function (option) {
+    return this.each(function () {
+      var $this = $(this)
+        , data = $this.data('alert')
+      if (!data) $this.data('alert', (data = new Alert(this)))
+      if (typeof option == 'string') data[option].call($this)
+    })
+  }
+
+  $.fn.alert.Constructor = Alert
+
+
+ /* ALERT NO CONFLICT
+  * ================= */
+
+  $.fn.alert.noConflict = function () {
+    $.fn.alert = old
+    return this
+  }
+
+
+ /* ALERT DATA-API
+  * ============== */
+
+  $(document).on('click.alert.data-api', dismiss, Alert.prototype.close)
+
+}(window.jQuery);/* ============================================================
+ * bootstrap-button.js v2.2.2
+ * http://twitter.github.com/bootstrap/javascript.html#buttons
+ * ============================================================
+ * Copyright 2012 Twitter, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ============================================================ */
+
+
+!function ($) {
+
+  "use strict"; // jshint ;_;
+
+
+ /* BUTTON PUBLIC CLASS DEFINITION
+  * ============================== */
+
+  var Button = function (element, options) {
+    this.$element = $(element)
+    this.options = $.extend({}, $.fn.button.defaults, options)
+  }
+
+  Button.prototype.setState = function (state) {
+    var d = 'disabled'
+      , $el = this.$element
+      , data = $el.data()
+      , val = $el.is('input') ? 'val' : 'html'
+
+    state = state + 'Text'
+    data.resetText || $el.data('resetText', $el[val]())
+
+    $el[val](data[state] || this.options[state])
+
+    // push to event loop to allow forms to submit
+    setTimeout(function () {
+      state == 'loadingText' ?
+        $el.addClass(d).attr(d, d) :
+        $el.removeClass(d).removeAttr(d)
+    }, 0)
+  }
+
+  Button.prototype.toggle = function () {
+    var $parent = this.$element.closest('[data-toggle="buttons-radio"]')
+
+    $parent && $parent
+      .find('.active')
+      .removeClass('active')
+
+    this.$element.toggleClass('active')
+  }
+
+
+ /* BUTTON PLUGIN DEFINITION
+  * ======================== */
+
+  var old = $.fn.button
+
+  $.fn.button = function (option) {
+    return this.each(function () {
+      var $this = $(this)
+        , data = $this.data('button')
+        , options = typeof option == 'object' && option
+      if (!data) $this.data('button', (data = new Button(this, options)))
+      if (option == 'toggle') data.toggle()
+      else if (option) data.setState(option)
+    })
+  }
+
+  $.fn.button.defaults = {
+    loadingText: 'loading...'
+  }
+
+  $.fn.button.Constructor = Button
+
+
+ /* BUTTON NO CONFLICT
+  * ================== */
+
+  $.fn.button.noConflict = function () {
+    $.fn.button = old
+    return this
+  }
+
+
+ /* BUTTON DATA-API
+  * =============== */
+
+  $(document).on('click.button.data-api', '[data-toggle^=button]', function (e) {
+    var $btn = $(e.target)
+    if (!$btn.hasClass('btn')) $btn = $btn.closest('.btn')
+    $btn.button('toggle')
+  })
+
+}(window.jQuery);/* ==========================================================
+ * bootstrap-carousel.js v2.2.2
+ * http://twitter.github.com/bootstrap/javascript.html#carousel
+ * ==========================================================
+ * Copyright 2012 Twitter, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ========================================================== */
+
+
+!function ($) {
+
+  "use strict"; // jshint ;_;
+
+
+ /* CAROUSEL CLASS DEFINITION
+  * ========================= */
+
+  var Carousel = function (element, options) {
+    this.$element = $(element)
+    this.options = options
+    this.options.pause == 'hover' && this.$element
+      .on('mouseenter', $.proxy(this.pause, this))
+      .on('mouseleave', $.proxy(this.cycle, this))
+  }
+
+  Carousel.prototype = {
+
+    cycle: function (e) {
+      if (!e) this.paused = false
+      this.options.interval
+        && !this.paused
+        && (this.interval = setInterval($.proxy(this.next, this), this.options.interval))
+      return this
+    }
+
+  , to: function (pos) {
+      var $active = this.$element.find('.item.active')
+        , children = $active.parent().children()
+        , activePos = children.index($active)
+        , that = this
+
+      if (pos > (children.length - 1) || pos < 0) return
+
+      if (this.sliding) {
+        return this.$element.one('slid', function () {
+          that.to(pos)
+        })
+      }
+
+      if (activePos == pos) {
+        return this.pause().cycle()
+      }
+
+      return this.slide(pos > activePos ? 'next' : 'prev', $(children[pos]))
+    }
+
+  , pause: function (e) {
+      if (!e) this.paused = true
+      if (this.$element.find('.next, .prev').length && $.support.transition.end) {
+        this.$element.trigger($.support.transition.end)
+        this.cycle()
+      }
+      clearInterval(this.interval)
+      this.interval = null
+      return this
+    }
+
+  , next: function () {
+      if (this.sliding) return
+      return this.slide('next')
+    }
+
+  , prev: function () {
+      if (this.sliding) return
+      return this.slide('prev')
+    }
+
+  , slide: function (type, next) {
+      var $active = this.$element.find('.item.active')
+        , $next = next || $active[type]()
+        , isCycling = this.interval
+        , direction = type == 'next' ? 'left' : 'right'
+        , fallback  = type == 'next' ? 'first' : 'last'
+        , that = this
+        , e
+
+      this.sliding = true
+
+      isCycling && this.pause()
+
+      $next = $next.length ? $next : this.$element.find('.item')[fallback]()
+
+      e = $.Event('slide', {
+        relatedTarget: $next[0]
+      })
+
+      if ($next.hasClass('active')) return
+
+      if ($.support.transition && this.$element.hasClass('slide')) {
+        this.$element.trigger(e)
+        if (e.isDefaultPrevented()) return
+        $next.addClass(type)
+        $next[0].offsetWidth // force reflow
+        $active.addClass(direction)
+        $next.addClass(direction)
+        this.$element.one($.support.transition.end, function () {
+          $next.removeClass([type, direction].join(' ')).addClass('active')
+          $active.removeClass(['active', direction].join(' '))
+          that.sliding = false
+          setTimeout(function () { that.$element.trigger('slid') }, 0)
+        })
+      } else {
+        this.$element.trigger(e)
+        if (e.isDefaultPrevented()) return
+        $active.removeClass('active')
+        $next.addClass('active')
+        this.sliding = false
+        this.$element.trigger('slid')
+      }
+
+      isCycling && this.cycle()
+
+      return this
+    }
+
+  }
+
+
+ /* CAROUSEL PLUGIN DEFINITION
+  * ========================== */
+
+  var old = $.fn.carousel
+
+  $.fn.carousel = function (option) {
+    return this.each(function () {
+      var $this = $(this)
+        , data = $this.data('carousel')
+        , options = $.extend({}, $.fn.carousel.defaults, typeof option == 'object' && option)
+        , action = typeof option == 'string' ? option : options.slide
+      if (!data) $this.data('carousel', (data = new Carousel(this, options)))
+      if (typeof option == 'number') data.to(option)
+      else if (action) data[action]()
+      else if (options.interval) data.cycle()
+    })
+  }
+
+  $.fn.carousel.defaults = {
+    interval: 5000
+  , pause: 'hover'
+  }
+
+  $.fn.carousel.Constructor = Carousel
+
+
+ /* CAROUSEL NO CONFLICT
+  * ==================== */
+
+  $.fn.carousel.noConflict = function () {
+    $.fn.carousel = old
+    return this
+  }
+
+ /* CAROUSEL DATA-API
+  * ================= */
+
+  $(document).on('click.carousel.data-api', '[data-slide]', function (e) {
+    var $this = $(this), href
+      , $target = $($this.attr('data-target') || (href = $this.attr('href')) && href.replace(/.*(?=#[^\s]+$)/, '')) //strip for ie7
+      , options = $.extend({}, $target.data(), $this.data())
+    $target.carousel(options)
+    e.preventDefault()
+  })
+
+}(window.jQuery);/* =============================================================
+ * bootstrap-collapse.js v2.2.2
+ * http://twitter.github.com/bootstrap/javascript.html#collapse
+ * =============================================================
+ * Copyright 2012 Twitter, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ============================================================ */
+
+
+!function ($) {
+
+  "use strict"; // jshint ;_;
+
+
+ /* COLLAPSE PUBLIC CLASS DEFINITION
+  * ================================ */
+
+  var Collapse = function (element, options) {
+    this.$element = $(element)
+    this.options = $.extend({}, $.fn.collapse.defaults, options)
+
+    if (this.options.parent) {
+      this.$parent = $(this.options.parent)
+    }
+
+    this.options.toggle && this.toggle()
+  }
+
+  Collapse.prototype = {
+
+    constructor: Collapse
+
+  , dimension: function () {
+      var hasWidth = this.$element.hasClass('width')
+      return hasWidth ? 'width' : 'height'
+    }
+
+  , show: function () {
+      var dimension
+        , scroll
+        , actives
+        , hasData
+
+      if (this.transitioning) return
+
+      dimension = this.dimension()
+      scroll = $.camelCase(['scroll', dimension].join('-'))
+      actives = this.$parent && this.$parent.find('> .accordion-group > .in')
+
+      if (actives && actives.length) {
+        hasData = actives.data('collapse')
+        if (hasData && hasData.transitioning) return
+        actives.collapse('hide')
+        hasData || actives.data('collapse', null)
+      }
+
+      this.$element[dimension](0)
+      this.transition('addClass', $.Event('show'), 'shown')
+      $.support.transition && this.$element[dimension](this.$element[0][scroll])
+    }
+
+  , hide: function () {
+      var dimension
+      if (this.transitioning) return
+      dimension = this.dimension()
+      this.reset(this.$element[dimension]())
+      this.transition('removeClass', $.Event('hide'), 'hidden')
+      this.$element[dimension](0)
+    }
+
+  , reset: function (size) {
+      var dimension = this.dimension()
+
+      this.$element
+        .removeClass('collapse')
+        [dimension](size || 'auto')
+        [0].offsetWidth
+
+      this.$element[size !== null ? 'addClass' : 'removeClass']('collapse')
+
+      return this
+    }
+
+  , transition: function (method, startEvent, completeEvent) {
+      var that = this
+        , complete = function () {
+            if (startEvent.type == 'show') that.reset()
+            that.transitioning = 0
+            that.$element.trigger(completeEvent)
+          }
+
+      this.$element.trigger(startEvent)
+
+      if (startEvent.isDefaultPrevented()) return
+
+      this.transitioning = 1
+
+      this.$element[method]('in')
+
+      $.support.transition && this.$element.hasClass('collapse') ?
+        this.$element.one($.support.transition.end, complete) :
+        complete()
+    }
+
+  , toggle: function () {
+      this[this.$element.hasClass('in') ? 'hide' : 'show']()
+    }
+
+  }
+
+
+ /* COLLAPSE PLUGIN DEFINITION
+  * ========================== */
+
+  var old = $.fn.collapse
+
+  $.fn.collapse = function (option) {
+    return this.each(function () {
+      var $this = $(this)
+        , data = $this.data('collapse')
+        , options = typeof option == 'object' && option
+      if (!data) $this.data('collapse', (data = new Collapse(this, options)))
+      if (typeof option == 'string') data[option]()
+    })
+  }
+
+  $.fn.collapse.defaults = {
+    toggle: true
+  }
+
+  $.fn.collapse.Constructor = Collapse
+
+
+ /* COLLAPSE NO CONFLICT
+  * ==================== */
+
+  $.fn.collapse.noConflict = function () {
+    $.fn.collapse = old
+    return this
+  }
+
+
+ /* COLLAPSE DATA-API
+  * ================= */
+
+  $(document).on('click.collapse.data-api', '[data-toggle=collapse]', function (e) {
+    var $this = $(this), href
+      , target = $this.attr('data-target')
+        || e.preventDefault()
+        || (href = $this.attr('href')) && href.replace(/.*(?=#[^\s]+$)/, '') //strip for ie7
+      , option = $(target).data('collapse') ? 'toggle' : $this.data()
+    $this[$(target).hasClass('in') ? 'addClass' : 'removeClass']('collapsed')
+    $(target).collapse(option)
+  })
+
+}(window.jQuery);/* ============================================================
+ * bootstrap-dropdown.js v2.2.2
+ * http://twitter.github.com/bootstrap/javascript.html#dropdowns
+ * ============================================================
+ * Copyright 2012 Twitter, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ============================================================ */
+
+
+!function ($) {
+
+  "use strict"; // jshint ;_;
+
+
+ /* DROPDOWN CLASS DEFINITION
+  * ========================= */
+
+  var toggle = '[data-toggle=dropdown]'
+    , Dropdown = function (element) {
+        var $el = $(element).on('click.dropdown.data-api', this.toggle)
+        $('html').on('click.dropdown.data-api', function () {
+          $el.parent().removeClass('open')
+        })
+      }
+
+  Dropdown.prototype = {
+
+    constructor: Dropdown
+
+  , toggle: function (e) {
+      var $this = $(this)
+        , $parent
+        , isActive
+
+      if ($this.is('.disabled, :disabled')) return
+
+      $parent = getParent($this)
+
+      isActive = $parent.hasClass('open')
+
+      clearMenus()
+
+      if (!isActive) {
+        $parent.toggleClass('open')
+      }
+
+      $this.focus()
+
+      return false
+    }
+
+  , keydown: function (e) {
+      var $this
+        , $items
+        , $active
+        , $parent
+        , isActive
+        , index
+
+      if (!/(38|40|27)/.test(e.keyCode)) return
+
+      $this = $(this)
+
+      e.preventDefault()
+      e.stopPropagation()
+
+      if ($this.is('.disabled, :disabled')) return
+
+      $parent = getParent($this)
+
+      isActive = $parent.hasClass('open')
+
+      if (!isActive || (isActive && e.keyCode == 27)) return $this.click()
+
+      $items = $('[role=menu] li:not(.divider):visible a', $parent)
+
+      if (!$items.length) return
+
+      index = $items.index($items.filter(':focus'))
+
+      if (e.keyCode == 38 && index > 0) index--                                        // up
+      if (e.keyCode == 40 && index < $items.length - 1) index++                        // down
+      if (!~index) index = 0
+
+      $items
+        .eq(index)
+        .focus()
+    }
+
+  }
+
+  function clearMenus() {
+    $(toggle).each(function () {
+      getParent($(this)).removeClass('open')
+    })
+  }
+
+  function getParent($this) {
+    var selector = $this.attr('data-target')
+      , $parent
+
+    if (!selector) {
+      selector = $this.attr('href')
+      selector = selector && /#/.test(selector) && selector.replace(/.*(?=#[^\s]*$)/, '') //strip for ie7
+    }
+
+    $parent = $(selector)
+    $parent.length || ($parent = $this.parent())
+
+    return $parent
+  }
+
+
+  /* DROPDOWN PLUGIN DEFINITION
+   * ========================== */
+
+  var old = $.fn.dropdown
+
+  $.fn.dropdown = function (option) {
+    return this.each(function () {
+      var $this = $(this)
+        , data = $this.data('dropdown')
+      if (!data) $this.data('dropdown', (data = new Dropdown(this)))
+      if (typeof option == 'string') data[option].call($this)
+    })
+  }
+
+  $.fn.dropdown.Constructor = Dropdown
+
+
+ /* DROPDOWN NO CONFLICT
+  * ==================== */
+
+  $.fn.dropdown.noConflict = function () {
+    $.fn.dropdown = old
+    return this
+  }
+
+
+  /* APPLY TO STANDARD DROPDOWN ELEMENTS
+   * =================================== */
+
+  $(document)
+    .on('click.dropdown.data-api touchstart.dropdown.data-api', clearMenus)
+    .on('click.dropdown touchstart.dropdown.data-api', '.dropdown form', function (e) { e.stopPropagation() })
+    .on('touchstart.dropdown.data-api', '.dropdown-menu', function (e) { e.stopPropagation() })
+    .on('click.dropdown.data-api touchstart.dropdown.data-api'  , toggle, Dropdown.prototype.toggle)
+    .on('keydown.dropdown.data-api touchstart.dropdown.data-api', toggle + ', [role=menu]' , Dropdown.prototype.keydown)
+
+}(window.jQuery);/* =========================================================
+ * bootstrap-modal.js v2.2.2
+ * http://twitter.github.com/bootstrap/javascript.html#modals
+ * =========================================================
+ * Copyright 2012 Twitter, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ========================================================= */
+
+
+!function ($) {
+
+  "use strict"; // jshint ;_;
+
+
+ /* MODAL CLASS DEFINITION
+  * ====================== */
+
+  var Modal = function (element, options) {
+    this.options = options
+    this.$element = $(element)
+      .delegate('[data-dismiss="modal"]', 'click.dismiss.modal', $.proxy(this.hide, this))
+    this.options.remote && this.$element.find('.modal-body').load(this.options.remote)
+  }
+
+  Modal.prototype = {
+
+      constructor: Modal
+
+    , toggle: function () {
+        return this[!this.isShown ? 'show' : 'hide']()
+      }
+
+    , show: function () {
+        var that = this
+          , e = $.Event('show')
+
+        this.$element.trigger(e)
+
+        if (this.isShown || e.isDefaultPrevented()) return
+
+        this.isShown = true
+
+        this.escape()
+
+        this.backdrop(function () {
+          var transition = $.support.transition && that.$element.hasClass('fade')
+
+          if (!that.$element.parent().length) {
+            that.$element.appendTo(document.body) //don't move modals dom position
+          }
+
+          that.$element
+            .show()
+
+          if (transition) {
+            that.$element[0].offsetWidth // force reflow
+          }
+
+          that.$element
+            .addClass('in')
+            .attr('aria-hidden', false)
+
+          that.enforceFocus()
+
+          transition ?
+            that.$element.one($.support.transition.end, function () { that.$element.focus().trigger('shown') }) :
+            that.$element.focus().trigger('shown')
+
+        })
+      }
+
+    , hide: function (e) {
+        e && e.preventDefault()
+
+        var that = this
+
+        e = $.Event('hide')
+
+        this.$element.trigger(e)
+
+        if (!this.isShown || e.isDefaultPrevented()) return
+
+        this.isShown = false
+
+        this.escape()
+
+        $(document).off('focusin.modal')
+
+        this.$element
+          .removeClass('in')
+          .attr('aria-hidden', true)
+
+        $.support.transition && this.$element.hasClass('fade') ?
+          this.hideWithTransition() :
+          this.hideModal()
+      }
+
+    , enforceFocus: function () {
+        var that = this
+        $(document).on('focusin.modal', function (e) {
+          if (that.$element[0] !== e.target && !that.$element.has(e.target).length) {
+            that.$element.focus()
+          }
+        })
+      }
+
+    , escape: function () {
+        var that = this
+        if (this.isShown && this.options.keyboard) {
+          this.$element.on('keyup.dismiss.modal', function ( e ) {
+            e.which == 27 && that.hide()
+          })
+        } else if (!this.isShown) {
+          this.$element.off('keyup.dismiss.modal')
+        }
+      }
+
+    , hideWithTransition: function () {
+        var that = this
+          , timeout = setTimeout(function () {
+              that.$element.off($.support.transition.end)
+              that.hideModal()
+            }, 500)
+
+        this.$element.one($.support.transition.end, function () {
+          clearTimeout(timeout)
+          that.hideModal()
+        })
+      }
+
+    , hideModal: function (that) {
+        this.$element
+          .hide()
+          .trigger('hidden')
+
+        this.backdrop()
+      }
+
+    , removeBackdrop: function () {
+        this.$backdrop.remove()
+        this.$backdrop = null
+      }
+
+    , backdrop: function (callback) {
+        var that = this
+          , animate = this.$element.hasClass('fade') ? 'fade' : ''
+
+        if (this.isShown && this.options.backdrop) {
+          var doAnimate = $.support.transition && animate
+
+          this.$backdrop = $('<div class="modal-backdrop ' + animate + '" />')
+            .appendTo(document.body)
+
+          this.$backdrop.click(
+            this.options.backdrop == 'static' ?
+              $.proxy(this.$element[0].focus, this.$element[0])
+            : $.proxy(this.hide, this)
+          )
+
+          if (doAnimate) this.$backdrop[0].offsetWidth // force reflow
+
+          this.$backdrop.addClass('in')
+
+          doAnimate ?
+            this.$backdrop.one($.support.transition.end, callback) :
+            callback()
+
+        } else if (!this.isShown && this.$backdrop) {
+          this.$backdrop.removeClass('in')
+
+          $.support.transition && this.$element.hasClass('fade')?
+            this.$backdrop.one($.support.transition.end, $.proxy(this.removeBackdrop, this)) :
+            this.removeBackdrop()
+
+        } else if (callback) {
+          callback()
+        }
+      }
+  }
+
+
+ /* MODAL PLUGIN DEFINITION
+  * ======================= */
+
+  var old = $.fn.modal
+
+  $.fn.modal = function (option) {
+    return this.each(function () {
+      var $this = $(this)
+        , data = $this.data('modal')
+        , options = $.extend({}, $.fn.modal.defaults, $this.data(), typeof option == 'object' && option)
+      if (!data) $this.data('modal', (data = new Modal(this, options)))
+      if (typeof option == 'string') data[option]()
+      else if (options.show) data.show()
+    })
+  }
+
+  $.fn.modal.defaults = {
+      backdrop: true
+    , keyboard: true
+    , show: true
+  }
+
+  $.fn.modal.Constructor = Modal
+
+
+ /* MODAL NO CONFLICT
+  * ================= */
+
+  $.fn.modal.noConflict = function () {
+    $.fn.modal = old
+    return this
+  }
+
+
+ /* MODAL DATA-API
+  * ============== */
+
+  $(document).on('click.modal.data-api', '[data-toggle="modal"]', function (e) {
+    var $this = $(this)
+      , href = $this.attr('href')
+      , $target = $($this.attr('data-target') || (href && href.replace(/.*(?=#[^\s]+$)/, ''))) //strip for ie7
+      , option = $target.data('modal') ? 'toggle' : $.extend({ remote:!/#/.test(href) && href }, $target.data(), $this.data())
+
+    e.preventDefault()
+
+    $target
+      .modal(option)
+      .one('hide', function () {
+        $this.focus()
+      })
+  })
+
+}(window.jQuery);
+/* ===========================================================
+ * bootstrap-tooltip.js v2.2.2
+ * http://twitter.github.com/bootstrap/javascript.html#tooltips
+ * Inspired by the original jQuery.tipsy by Jason Frame
+ * ===========================================================
+ * Copyright 2012 Twitter, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ========================================================== */
+
+
+!function ($) {
+
+  "use strict"; // jshint ;_;
+
+
+ /* TOOLTIP PUBLIC CLASS DEFINITION
+  * =============================== */
+
+  var Tooltip = function (element, options) {
+    this.init('tooltip', element, options)
+  }
+
+  Tooltip.prototype = {
+
+    constructor: Tooltip
+
+  , init: function (type, element, options) {
+      var eventIn
+        , eventOut
+
+      this.type = type
+      this.$element = $(element)
+      this.options = this.getOptions(options)
+      this.enabled = true
+
+      if (this.options.trigger == 'click') {
+        this.$element.on('click.' + this.type, this.options.selector, $.proxy(this.toggle, this))
+      } else if (this.options.trigger != 'manual') {
+        eventIn = this.options.trigger == 'hover' ? 'mouseenter' : 'focus'
+        eventOut = this.options.trigger == 'hover' ? 'mouseleave' : 'blur'
+        this.$element.on(eventIn + '.' + this.type, this.options.selector, $.proxy(this.enter, this))
+        this.$element.on(eventOut + '.' + this.type, this.options.selector, $.proxy(this.leave, this))
+      }
+
+      this.options.selector ?
+        (this._options = $.extend({}, this.options, { trigger: 'manual', selector: '' })) :
+        this.fixTitle()
+    }
+
+  , getOptions: function (options) {
+      options = $.extend({}, $.fn[this.type].defaults, options, this.$element.data())
+
+      if (options.delay && typeof options.delay == 'number') {
+        options.delay = {
+          show: options.delay
+        , hide: options.delay
+        }
+      }
+
+      return options
+    }
+
+  , enter: function (e) {
+      var self = $(e.currentTarget)[this.type](this._options).data(this.type)
+
+      if (!self.options.delay || !self.options.delay.show) return self.show()
+
+      clearTimeout(this.timeout)
+      self.hoverState = 'in'
+      this.timeout = setTimeout(function() {
+        if (self.hoverState == 'in') self.show()
+      }, self.options.delay.show)
+    }
+
+  , leave: function (e) {
+      var self = $(e.currentTarget)[this.type](this._options).data(this.type)
+
+      if (this.timeout) clearTimeout(this.timeout)
+      if (!self.options.delay || !self.options.delay.hide) return self.hide()
+
+      self.hoverState = 'out'
+      this.timeout = setTimeout(function() {
+        if (self.hoverState == 'out') self.hide()
+      }, self.options.delay.hide)
+    }
+
+  , show: function () {
+      var $tip
+        , inside
+        , pos
+        , actualWidth
+        , actualHeight
+        , placement
+        , tp
+
+      if (this.hasContent() && this.enabled) {
+        $tip = this.tip()
+        this.setContent()
+
+        if (this.options.animation) {
+          $tip.addClass('fade')
+        }
+
+        placement = typeof this.options.placement == 'function' ?
+          this.options.placement.call(this, $tip[0], this.$element[0]) :
+          this.options.placement
+
+        inside = /in/.test(placement)
+
+        $tip
+          .detach()
+          .css({ top: 0, left: 0, display: 'block' })
+          .insertAfter(this.$element)
+
+        pos = this.getPosition(inside)
+
+        actualWidth = $tip[0].offsetWidth
+        actualHeight = $tip[0].offsetHeight
+
+        switch (inside ? placement.split(' ')[1] : placement) {
+          case 'bottom':
+            tp = {top: pos.top + pos.height, left: pos.left + pos.width / 2 - actualWidth / 2}
+            break
+          case 'top':
+            tp = {top: pos.top - actualHeight, left: pos.left + pos.width / 2 - actualWidth / 2}
+            break
+          case 'left':
+            tp = {top: pos.top + pos.height / 2 - actualHeight / 2, left: pos.left - actualWidth}
+            break
+          case 'right':
+            tp = {top: pos.top + pos.height / 2 - actualHeight / 2, left: pos.left + pos.width}
+            break
+        }
+
+        $tip
+          .offset(tp)
+          .addClass(placement)
+          .addClass('in')
+      }
+    }
+
+  , setContent: function () {
+      var $tip = this.tip()
+        , title = this.getTitle()
+
+      $tip.find('.tooltip-inner')[this.options.html ? 'html' : 'text'](title)
+      $tip.removeClass('fade in top bottom left right')
+    }
+
+  , hide: function () {
+      var that = this
+        , $tip = this.tip()
+
+      $tip.removeClass('in')
+
+      function removeWithAnimation() {
+        var timeout = setTimeout(function () {
+          $tip.off($.support.transition.end).detach()
+        }, 500)
+
+        $tip.one($.support.transition.end, function () {
+          clearTimeout(timeout)
+          $tip.detach()
+        })
+      }
+
+      $.support.transition && this.$tip.hasClass('fade') ?
+        removeWithAnimation() :
+        $tip.detach()
+
+      return this
+    }
+
+  , fixTitle: function () {
+      var $e = this.$element
+      if ($e.attr('title') || typeof($e.attr('data-original-title')) != 'string') {
+        $e.attr('data-original-title', $e.attr('title') || '').removeAttr('title')
+      }
+    }
+
+  , hasContent: function () {
+      return this.getTitle()
+    }
+
+  , getPosition: function (inside) {
+      return $.extend({}, (inside ? {top: 0, left: 0} : this.$element.offset()), {
+        width: this.$element[0].offsetWidth
+      , height: this.$element[0].offsetHeight
+      })
+    }
+
+  , getTitle: function () {
+      var title
+        , $e = this.$element
+        , o = this.options
+
+      title = $e.attr('data-original-title')
+        || (typeof o.title == 'function' ? o.title.call($e[0]) :  o.title)
+
+      return title
+    }
+
+  , tip: function () {
+      return this.$tip = this.$tip || $(this.options.template)
+    }
+
+  , validate: function () {
+      if (!this.$element[0].parentNode) {
+        this.hide()
+        this.$element = null
+        this.options = null
+      }
+    }
+
+  , enable: function () {
+      this.enabled = true
+    }
+
+  , disable: function () {
+      this.enabled = false
+    }
+
+  , toggleEnabled: function () {
+      this.enabled = !this.enabled
+    }
+
+  , toggle: function (e) {
+      var self = $(e.currentTarget)[this.type](this._options).data(this.type)
+      self[self.tip().hasClass('in') ? 'hide' : 'show']()
+    }
+
+  , destroy: function () {
+      this.hide().$element.off('.' + this.type).removeData(this.type)
+    }
+
+  }
+
+
+ /* TOOLTIP PLUGIN DEFINITION
+  * ========================= */
+
+  var old = $.fn.tooltip
+
+  $.fn.tooltip = function ( option ) {
+    return this.each(function () {
+      var $this = $(this)
+        , data = $this.data('tooltip')
+        , options = typeof option == 'object' && option
+      if (!data) $this.data('tooltip', (data = new Tooltip(this, options)))
+      if (typeof option == 'string') data[option]()
+    })
+  }
+
+  $.fn.tooltip.Constructor = Tooltip
+
+  $.fn.tooltip.defaults = {
+    animation: true
+  , placement: 'top'
+  , selector: false
+  , template: '<div class="tooltip"><div class="tooltip-arrow"></div><div class="tooltip-inner"></div></div>'
+  , trigger: 'hover'
+  , title: ''
+  , delay: 0
+  , html: false
+  }
+
+
+ /* TOOLTIP NO CONFLICT
+  * =================== */
+
+  $.fn.tooltip.noConflict = function () {
+    $.fn.tooltip = old
+    return this
+  }
+
+}(window.jQuery);/* ===========================================================
+ * bootstrap-popover.js v2.2.2
+ * http://twitter.github.com/bootstrap/javascript.html#popovers
+ * ===========================================================
+ * Copyright 2012 Twitter, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =========================================================== */
+
+
+!function ($) {
+
+  "use strict"; // jshint ;_;
+
+
+ /* POPOVER PUBLIC CLASS DEFINITION
+  * =============================== */
+
+  var Popover = function (element, options) {
+    this.init('popover', element, options)
+  }
+
+
+  /* NOTE: POPOVER EXTENDS BOOTSTRAP-TOOLTIP.js
+     ========================================== */
+
+  Popover.prototype = $.extend({}, $.fn.tooltip.Constructor.prototype, {
+
+    constructor: Popover
+
+  , setContent: function () {
+      var $tip = this.tip()
+        , title = this.getTitle()
+        , content = this.getContent()
+
+      $tip.find('.popover-title')[this.options.html ? 'html' : 'text'](title)
+      $tip.find('.popover-content')[this.options.html ? 'html' : 'text'](content)
+
+      $tip.removeClass('fade top bottom left right in')
+    }
+
+  , hasContent: function () {
+      return this.getTitle() || this.getContent()
+    }
+
+  , getContent: function () {
+      var content
+        , $e = this.$element
+        , o = this.options
+
+      content = $e.attr('data-content')
+        || (typeof o.content == 'function' ? o.content.call($e[0]) :  o.content)
+
+      return content
+    }
+
+  , tip: function () {
+      if (!this.$tip) {
+        this.$tip = $(this.options.template)
+      }
+      return this.$tip
+    }
+
+  , destroy: function () {
+      this.hide().$element.off('.' + this.type).removeData(this.type)
+    }
+
+  })
+
+
+ /* POPOVER PLUGIN DEFINITION
+  * ======================= */
+
+  var old = $.fn.popover
+
+  $.fn.popover = function (option) {
+    return this.each(function () {
+      var $this = $(this)
+        , data = $this.data('popover')
+        , options = typeof option == 'object' && option
+      if (!data) $this.data('popover', (data = new Popover(this, options)))
+      if (typeof option == 'string') data[option]()
+    })
+  }
+
+  $.fn.popover.Constructor = Popover
+
+  $.fn.popover.defaults = $.extend({} , $.fn.tooltip.defaults, {
+    placement: 'right'
+  , trigger: 'click'
+  , content: ''
+  , template: '<div class="popover"><div class="arrow"></div><div class="popover-inner"><h3 class="popover-title"></h3><div class="popover-content"></div></div></div>'
+  })
+
+
+ /* POPOVER NO CONFLICT
+  * =================== */
+
+  $.fn.popover.noConflict = function () {
+    $.fn.popover = old
+    return this
+  }
+
+}(window.jQuery);/* =============================================================
+ * bootstrap-scrollspy.js v2.2.2
+ * http://twitter.github.com/bootstrap/javascript.html#scrollspy
+ * =============================================================
+ * Copyright 2012 Twitter, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ============================================================== */
+
+
+!function ($) {
+
+  "use strict"; // jshint ;_;
+
+
+ /* SCROLLSPY CLASS DEFINITION
+  * ========================== */
+
+  function ScrollSpy(element, options) {
+    var process = $.proxy(this.process, this)
+      , $element = $(element).is('body') ? $(window) : $(element)
+      , href
+    this.options = $.extend({}, $.fn.scrollspy.defaults, options)
+    this.$scrollElement = $element.on('scroll.scroll-spy.data-api', process)
+    this.selector = (this.options.target
+      || ((href = $(element).attr('href')) && href.replace(/.*(?=#[^\s]+$)/, '')) //strip for ie7
+      || '') + ' .nav li > a'
+    this.$body = $('body')
+    this.refresh()
+    this.process()
+  }
+
+  ScrollSpy.prototype = {
+
+      constructor: ScrollSpy
+
+    , refresh: function () {
+        var self = this
+          , $targets
+
+        this.offsets = $([])
+        this.targets = $([])
+
+        $targets = this.$body
+          .find(this.selector)
+          .map(function () {
+            var $el = $(this)
+              , href = $el.data('target') || $el.attr('href')
+              , $href = /^#\w/.test(href) && $(href)
+            return ( $href
+              && $href.length
+              && [[ $href.position().top + self.$scrollElement.scrollTop(), href ]] ) || null
+          })
+          .sort(function (a, b) { return a[0] - b[0] })
+          .each(function () {
+            self.offsets.push(this[0])
+            self.targets.push(this[1])
+          })
+      }
+
+    , process: function () {
+        var scrollTop = this.$scrollElement.scrollTop() + this.options.offset
+          , scrollHeight = this.$scrollElement[0].scrollHeight || this.$body[0].scrollHeight
+          , maxScroll = scrollHeight - this.$scrollElement.height()
+          , offsets = this.offsets
+          , targets = this.targets
+          , activeTarget = this.activeTarget
+          , i
+
+        if (scrollTop >= maxScroll) {
+          return activeTarget != (i = targets.last()[0])
+            && this.activate ( i )
+        }
+
+        for (i = offsets.length; i--;) {
+          activeTarget != targets[i]
+            && scrollTop >= offsets[i]
+            && (!offsets[i + 1] || scrollTop <= offsets[i + 1])
+            && this.activate( targets[i] )
+        }
+      }
+
+    , activate: function (target) {
+        var active
+          , selector
+
+        this.activeTarget = target
+
+        $(this.selector)
+          .parent('.active')
+          .removeClass('active')
+
+        selector = this.selector
+          + '[data-target="' + target + '"],'
+          + this.selector + '[href="' + target + '"]'
+
+        active = $(selector)
+          .parent('li')
+          .addClass('active')
+
+        if (active.parent('.dropdown-menu').length)  {
+          active = active.closest('li.dropdown').addClass('active')
+        }
+
+        active.trigger('activate')
+      }
+
+  }
+
+
+ /* SCROLLSPY PLUGIN DEFINITION
+  * =========================== */
+
+  var old = $.fn.scrollspy
+
+  $.fn.scrollspy = function (option) {
+    return this.each(function () {
+      var $this = $(this)
+        , data = $this.data('scrollspy')
+        , options = typeof option == 'object' && option
+      if (!data) $this.data('scrollspy', (data = new ScrollSpy(this, options)))
+      if (typeof option == 'string') data[option]()
+    })
+  }
+
+  $.fn.scrollspy.Constructor = ScrollSpy
+
+  $.fn.scrollspy.defaults = {
+    offset: 10
+  }
+
+
+ /* SCROLLSPY NO CONFLICT
+  * ===================== */
+
+  $.fn.scrollspy.noConflict = function () {
+    $.fn.scrollspy = old
+    return this
+  }
+
+
+ /* SCROLLSPY DATA-API
+  * ================== */
+
+  $(window).on('load', function () {
+    $('[data-spy="scroll"]').each(function () {
+      var $spy = $(this)
+      $spy.scrollspy($spy.data())
+    })
+  })
+
+}(window.jQuery);/* ========================================================
+ * bootstrap-tab.js v2.2.2
+ * http://twitter.github.com/bootstrap/javascript.html#tabs
+ * ========================================================
+ * Copyright 2012 Twitter, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ======================================================== */
+
+
+!function ($) {
+
+  "use strict"; // jshint ;_;
+
+
+ /* TAB CLASS DEFINITION
+  * ==================== */
+
+  var Tab = function (element) {
+    this.element = $(element)
+  }
+
+  Tab.prototype = {
+
+    constructor: Tab
+
+  , show: function () {
+      var $this = this.element
+        , $ul = $this.closest('ul:not(.dropdown-menu)')
+        , selector = $this.attr('data-target')
+        , previous
+        , $target
+        , e
+
+      if (!selector) {
+        selector = $this.attr('href')
+        selector = selector && selector.replace(/.*(?=#[^\s]*$)/, '') //strip for ie7
+      }
+
+      if ( $this.parent('li').hasClass('active') ) return
+
+      previous = $ul.find('.active:last a')[0]
+
+      e = $.Event('show', {
+        relatedTarget: previous
+      })
+
+      $this.trigger(e)
+
+      if (e.isDefaultPrevented()) return
+
+      $target = $(selector)
+
+      this.activate($this.parent('li'), $ul)
+      this.activate($target, $target.parent(), function () {
+        $this.trigger({
+          type: 'shown'
+        , relatedTarget: previous
+        })
+      })
+    }
+
+  , activate: function ( element, container, callback) {
+      var $active = container.find('> .active')
+        , transition = callback
+            && $.support.transition
+            && $active.hasClass('fade')
+
+      function next() {
+        $active
+          .removeClass('active')
+          .find('> .dropdown-menu > .active')
+          .removeClass('active')
+
+        element.addClass('active')
+
+        if (transition) {
+          element[0].offsetWidth // reflow for transition
+          element.addClass('in')
+        } else {
+          element.removeClass('fade')
+        }
+
+        if ( element.parent('.dropdown-menu') ) {
+          element.closest('li.dropdown').addClass('active')
+        }
+
+        callback && callback()
+      }
+
+      transition ?
+        $active.one($.support.transition.end, next) :
+        next()
+
+      $active.removeClass('in')
+    }
+  }
+
+
+ /* TAB PLUGIN DEFINITION
+  * ===================== */
+
+  var old = $.fn.tab
+
+  $.fn.tab = function ( option ) {
+    return this.each(function () {
+      var $this = $(this)
+        , data = $this.data('tab')
+      if (!data) $this.data('tab', (data = new Tab(this)))
+      if (typeof option == 'string') data[option]()
+    })
+  }
+
+  $.fn.tab.Constructor = Tab
+
+
+ /* TAB NO CONFLICT
+  * =============== */
+
+  $.fn.tab.noConflict = function () {
+    $.fn.tab = old
+    return this
+  }
+
+
+ /* TAB DATA-API
+  * ============ */
+
+  $(document).on('click.tab.data-api', '[data-toggle="tab"], [data-toggle="pill"]', function (e) {
+    e.preventDefault()
+    $(this).tab('show')
+  })
+
+}(window.jQuery);/* =============================================================
+ * bootstrap-typeahead.js v2.2.2
+ * http://twitter.github.com/bootstrap/javascript.html#typeahead
+ * =============================================================
+ * Copyright 2012 Twitter, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ============================================================ */
+
+
+!function($){
+
+  "use strict"; // jshint ;_;
+
+
+ /* TYPEAHEAD PUBLIC CLASS DEFINITION
+  * ================================= */
+
+  var Typeahead = function (element, options) {
+    this.$element = $(element)
+    this.options = $.extend({}, $.fn.typeahead.defaults, options)
+    this.matcher = this.options.matcher || this.matcher
+    this.sorter = this.options.sorter || this.sorter
+    this.highlighter = this.options.highlighter || this.highlighter
+    this.updater = this.options.updater || this.updater
+    this.source = this.options.source
+    this.$menu = $(this.options.menu)
+    this.shown = false
+    this.listen()
+  }
+
+  Typeahead.prototype = {
+
+    constructor: Typeahead
+
+  , select: function () {
+      var val = this.$menu.find('.active').attr('data-value')
+      this.$element
+        .val(this.updater(val))
+        .change()
+      return this.hide()
+    }
+
+  , updater: function (item) {
+      return item
+    }
+
+  , show: function () {
+      var pos = $.extend({}, this.$element.position(), {
+        height: this.$element[0].offsetHeight
+      })
+
+      this.$menu
+        .insertAfter(this.$element)
+        .css({
+          top: pos.top + pos.height
+        , left: pos.left
+        })
+        .show()
+
+      this.shown = true
+      return this
+    }
+
+  , hide: function () {
+      this.$menu.hide()
+      this.shown = false
+      return this
+    }
+
+  , lookup: function (event) {
+      var items
+
+      this.query = this.$element.val()
+
+      if (!this.query || this.query.length < this.options.minLength) {
+        return this.shown ? this.hide() : this
+      }
+
+      items = $.isFunction(this.source) ? this.source(this.query, $.proxy(this.process, this)) : this.source
+
+      return items ? this.process(items) : this
+    }
+
+  , process: function (items) {
+      var that = this
+
+      items = $.grep(items, function (item) {
+        return that.matcher(item)
+      })
+
+      items = this.sorter(items)
+
+      if (!items.length) {
+        return this.shown ? this.hide() : this
+      }
+
+      return this.render(items.slice(0, this.options.items)).show()
+    }
+
+  , matcher: function (item) {
+      return ~item.toLowerCase().indexOf(this.query.toLowerCase())
+    }
+
+  , sorter: function (items) {
+      var beginswith = []
+        , caseSensitive = []
+        , caseInsensitive = []
+        , item
+
+      while (item = items.shift()) {
+        if (!item.toLowerCase().indexOf(this.query.toLowerCase())) beginswith.push(item)
+        else if (~item.indexOf(this.query)) caseSensitive.push(item)
+        else caseInsensitive.push(item)
+      }
+
+      return beginswith.concat(caseSensitive, caseInsensitive)
+    }
+
+  , highlighter: function (item) {
+      var query = this.query.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&')
+      return item.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
+        return '<strong>' + match + '</strong>'
+      })
+    }
+
+  , render: function (items) {
+      var that = this
+
+      items = $(items).map(function (i, item) {
+        i = $(that.options.item).attr('data-value', item)
+        i.find('a').html(that.highlighter(item))
+        return i[0]
+      })
+
+      items.first().addClass('active')
+      this.$menu.html(items)
+      return this
+    }
+
+  , next: function (event) {
+      var active = this.$menu.find('.active').removeClass('active')
+        , next = active.next()
+
+      if (!next.length) {
+        next = $(this.$menu.find('li')[0])
+      }
+
+      next.addClass('active')
+    }
+
+  , prev: function (event) {
+      var active = this.$menu.find('.active').removeClass('active')
+        , prev = active.prev()
+
+      if (!prev.length) {
+        prev = this.$menu.find('li').last()
+      }
+
+      prev.addClass('active')
+    }
+
+  , listen: function () {
+      this.$element
+        .on('blur',     $.proxy(this.blur, this))
+        .on('keypress', $.proxy(this.keypress, this))
+        .on('keyup',    $.proxy(this.keyup, this))
+
+      if (this.eventSupported('keydown')) {
+        this.$element.on('keydown', $.proxy(this.keydown, this))
+      }
+
+      this.$menu
+        .on('click', $.proxy(this.click, this))
+        .on('mouseenter', 'li', $.proxy(this.mouseenter, this))
+    }
+
+  , eventSupported: function(eventName) {
+      var isSupported = eventName in this.$element
+      if (!isSupported) {
+        this.$element.setAttribute(eventName, 'return;')
+        isSupported = typeof this.$element[eventName] === 'function'
+      }
+      return isSupported
+    }
+
+  , move: function (e) {
+      if (!this.shown) return
+
+      switch(e.keyCode) {
+        case 9: // tab
+        case 13: // enter
+        case 27: // escape
+          e.preventDefault()
+          break
+
+        case 38: // up arrow
+          e.preventDefault()
+          this.prev()
+          break
+
+        case 40: // down arrow
+          e.preventDefault()
+          this.next()
+          break
+      }
+
+      e.stopPropagation()
+    }
+
+  , keydown: function (e) {
+      this.suppressKeyPressRepeat = ~$.inArray(e.keyCode, [40,38,9,13,27])
+      this.move(e)
+    }
+
+  , keypress: function (e) {
+      if (this.suppressKeyPressRepeat) return
+      this.move(e)
+    }
+
+  , keyup: function (e) {
+      switch(e.keyCode) {
+        case 40: // down arrow
+        case 38: // up arrow
+        case 16: // shift
+        case 17: // ctrl
+        case 18: // alt
+          break
+
+        case 9: // tab
+        case 13: // enter
+          if (!this.shown) return
+          this.select()
+          break
+
+        case 27: // escape
+          if (!this.shown) return
+          this.hide()
+          break
+
+        default:
+          this.lookup()
+      }
+
+      e.stopPropagation()
+      e.preventDefault()
+  }
+
+  , blur: function (e) {
+      var that = this
+      setTimeout(function () { that.hide() }, 150)
+    }
+
+  , click: function (e) {
+      e.stopPropagation()
+      e.preventDefault()
+      this.select()
+    }
+
+  , mouseenter: function (e) {
+      this.$menu.find('.active').removeClass('active')
+      $(e.currentTarget).addClass('active')
+    }
+
+  }
+
+
+  /* TYPEAHEAD PLUGIN DEFINITION
+   * =========================== */
+
+  var old = $.fn.typeahead
+
+  $.fn.typeahead = function (option) {
+    return this.each(function () {
+      var $this = $(this)
+        , data = $this.data('typeahead')
+        , options = typeof option == 'object' && option
+      if (!data) $this.data('typeahead', (data = new Typeahead(this, options)))
+      if (typeof option == 'string') data[option]()
+    })
+  }
+
+  $.fn.typeahead.defaults = {
+    source: []
+  , items: 8
+  , menu: '<ul class="typeahead dropdown-menu"></ul>'
+  , item: '<li><a href="#"></a></li>'
+  , minLength: 1
+  }
+
+  $.fn.typeahead.Constructor = Typeahead
+
+
+ /* TYPEAHEAD NO CONFLICT
+  * =================== */
+
+  $.fn.typeahead.noConflict = function () {
+    $.fn.typeahead = old
+    return this
+  }
+
+
+ /* TYPEAHEAD DATA-API
+  * ================== */
+
+  $(document).on('focus.typeahead.data-api', '[data-provide="typeahead"]', function (e) {
+    var $this = $(this)
+    if ($this.data('typeahead')) return
+    e.preventDefault()
+    $this.typeahead($this.data())
+  })
+
+}(window.jQuery);
+/* ==========================================================
+ * bootstrap-affix.js v2.2.2
+ * http://twitter.github.com/bootstrap/javascript.html#affix
+ * ==========================================================
+ * Copyright 2012 Twitter, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ========================================================== */
+
+
+!function ($) {
+
+  "use strict"; // jshint ;_;
+
+
+ /* AFFIX CLASS DEFINITION
+  * ====================== */
+
+  var Affix = function (element, options) {
+    this.options = $.extend({}, $.fn.affix.defaults, options)
+    this.$window = $(window)
+      .on('scroll.affix.data-api', $.proxy(this.checkPosition, this))
+      .on('click.affix.data-api',  $.proxy(function () { setTimeout($.proxy(this.checkPosition, this), 1) }, this))
+    this.$element = $(element)
+    this.checkPosition()
+  }
+
+  Affix.prototype.checkPosition = function () {
+    if (!this.$element.is(':visible')) return
+
+    var scrollHeight = $(document).height()
+      , scrollTop = this.$window.scrollTop()
+      , position = this.$element.offset()
+      , offset = this.options.offset
+      , offsetBottom = offset.bottom
+      , offsetTop = offset.top
+      , reset = 'affix affix-top affix-bottom'
+      , affix
+
+    if (typeof offset != 'object') offsetBottom = offsetTop = offset
+    if (typeof offsetTop == 'function') offsetTop = offset.top()
+    if (typeof offsetBottom == 'function') offsetBottom = offset.bottom()
+
+    affix = this.unpin != null && (scrollTop + this.unpin <= position.top) ?
+      false    : offsetBottom != null && (position.top + this.$element.height() >= scrollHeight - offsetBottom) ?
+      'bottom' : offsetTop != null && scrollTop <= offsetTop ?
+      'top'    : false
+
+    if (this.affixed === affix) return
+
+    this.affixed = affix
+    this.unpin = affix == 'bottom' ? position.top - scrollTop : null
+
+    this.$element.removeClass(reset).addClass('affix' + (affix ? '-' + affix : ''))
+  }
+
+
+ /* AFFIX PLUGIN DEFINITION
+  * ======================= */
+
+  var old = $.fn.affix
+
+  $.fn.affix = function (option) {
+    return this.each(function () {
+      var $this = $(this)
+        , data = $this.data('affix')
+        , options = typeof option == 'object' && option
+      if (!data) $this.data('affix', (data = new Affix(this, options)))
+      if (typeof option == 'string') data[option]()
+    })
+  }
+
+  $.fn.affix.Constructor = Affix
+
+  $.fn.affix.defaults = {
+    offset: 0
+  }
+
+
+ /* AFFIX NO CONFLICT
+  * ================= */
+
+  $.fn.affix.noConflict = function () {
+    $.fn.affix = old
+    return this
+  }
+
+
+ /* AFFIX DATA-API
+  * ============== */
+
+  $(window).on('load', function () {
+    $('[data-spy="affix"]').each(function () {
+      var $spy = $(this)
+        , data = $spy.data()
+
+      data.offset = data.offset || {}
+
+      data.offsetBottom && (data.offset.bottom = data.offsetBottom)
+      data.offsetTop && (data.offset.top = data.offsetTop)
+
+      $spy.affix(data)
+    })
+  })
+
+
+}(window.jQuery);;
+
 // lib/handlebars/base.js
 var Handlebars = {};
 
@@ -14209,5 +16369,1318 @@ require.define({
     };
   }
 });
+;
+
+/**
+ * Uncompressed source can be found at https://login.persona.org/include.orig.js
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+(function() {
+  // this is the file that the RP includes to shim in the
+  // navigator.id.getVerifiedEmail() function
+  //  "use strict";
+
+  // local embedded copy of jschannel: http://github.com/mozilla/jschannel
+  /**
+   * js_channel is a very lightweight abstraction on top of
+   * postMessage which defines message formats and semantics
+   * to support interactions more rich than just message passing
+   * js_channel supports:
+   *  + query/response - traditional rpc
+   *  + query/update/response - incremental async return of results
+   *    to a query
+   *  + notifications - fire and forget
+   *  + error handling
+   *
+   * js_channel is based heavily on json-rpc, but is focused at the
+   * problem of inter-iframe RPC.
+   *
+   * Message types:
+   *  There are 5 types of messages that can flow over this channel,
+   *  and you may determine what type of message an object is by
+   *  examining its parameters:
+   *  1. Requests
+   *    + integer id
+   *    + string method
+   *    + (optional) any params
+   *  2. Callback Invocations (or just "Callbacks")
+   *    + integer id
+   *    + string callback
+   *    + (optional) params
+   *  3. Error Responses (or just "Errors)
+   *    + integer id
+   *    + string error
+   *    + (optional) string message
+   *  4. Responses
+   *    + integer id
+   *    + (optional) any result
+   *  5. Notifications
+   *    + string method
+   *    + (optional) any params
+   */
+  var Channel = (function() {
+    "use strict";
+
+    // current transaction id, start out at a random *odd* number between 1 and a million
+    // There is one current transaction counter id per page, and it's shared between
+    // channel instances.  That means of all messages posted from a single javascript
+    // evaluation context, we'll never have two with the same id.
+    var s_curTranId = Math.floor(Math.random()*1000001);
+
+    // no two bound channels in the same javascript evaluation context may have the same origin, scope, and window.
+    // futher if two bound channels have the same window and scope, they may not have *overlapping* origins
+    // (either one or both support '*').  This restriction allows a single onMessage handler to efficiently
+    // route messages based on origin and scope.  The s_boundChans maps origins to scopes, to message
+    // handlers.  Request and Notification messages are routed using this table.
+    // Finally, channels are inserted into this table when built, and removed when destroyed.
+    var s_boundChans = { };
+
+    // add a channel to s_boundChans, throwing if a dup exists
+    function s_addBoundChan(win, origin, scope, handler) {
+      function hasWin(arr) {
+        for (var i = 0; i < arr.length; i++) if (arr[i].win === win) return true;
+        return false;
+      }
+
+      // does she exist?
+      var exists = false;
+
+
+      if (origin === '*') {
+        // we must check all other origins, sadly.
+        for (var k in s_boundChans) {
+          if (!s_boundChans.hasOwnProperty(k)) continue;
+          if (k === '*') continue;
+          if (typeof s_boundChans[k][scope] === 'object') {
+            exists = hasWin(s_boundChans[k][scope]);
+            if (exists) break;
+          }
+        }
+      } else {
+        // we must check only '*'
+        if ((s_boundChans['*'] && s_boundChans['*'][scope])) {
+          exists = hasWin(s_boundChans['*'][scope]);
+        }
+        if (!exists && s_boundChans[origin] && s_boundChans[origin][scope])
+        {
+          exists = hasWin(s_boundChans[origin][scope]);
+        }
+      }
+      if (exists) throw "A channel is already bound to the same window which overlaps with origin '"+ origin +"' and has scope '"+scope+"'";
+
+      if (typeof s_boundChans[origin] != 'object') s_boundChans[origin] = { };
+      if (typeof s_boundChans[origin][scope] != 'object') s_boundChans[origin][scope] = [ ];
+      s_boundChans[origin][scope].push({win: win, handler: handler});
+    }
+
+    function s_removeBoundChan(win, origin, scope) {
+      var arr = s_boundChans[origin][scope];
+      for (var i = 0; i < arr.length; i++) {
+        if (arr[i].win === win) {
+          arr.splice(i,1);
+        }
+      }
+      if (s_boundChans[origin][scope].length === 0) {
+        delete s_boundChans[origin][scope];
+      }
+    }
+
+    function s_isArray(obj) {
+      if (Array.isArray) return Array.isArray(obj);
+      else {
+        return (obj.constructor.toString().indexOf("Array") != -1);
+      }
+    }
+
+    // No two outstanding outbound messages may have the same id, period.  Given that, a single table
+    // mapping "transaction ids" to message handlers, allows efficient routing of Callback, Error, and
+    // Response messages.  Entries are added to this table when requests are sent, and removed when
+    // responses are received.
+    var s_transIds = { };
+
+    // class singleton onMessage handler
+    // this function is registered once and all incoming messages route through here.  This
+    // arrangement allows certain efficiencies, message data is only parsed once and dispatch
+    // is more efficient, especially for large numbers of simultaneous channels.
+    var s_onMessage = function(e) {
+      try {
+        var m = JSON.parse(e.data);
+        if (typeof m !== 'object' || m === null) throw "malformed";
+      } catch(e) {
+        // just ignore any posted messages that do not consist of valid JSON
+        return;
+      }
+
+      var w = e.source;
+      var o = e.origin;
+      var s, i, meth;
+
+      if (typeof m.method === 'string') {
+        var ar = m.method.split('::');
+        if (ar.length == 2) {
+          s = ar[0];
+          meth = ar[1];
+        } else {
+          meth = m.method;
+        }
+      }
+
+      if (typeof m.id !== 'undefined') i = m.id;
+
+      // w is message source window
+      // o is message origin
+      // m is parsed message
+      // s is message scope
+      // i is message id (or undefined)
+      // meth is unscoped method name
+      // ^^ based on these factors we can route the message
+
+      // if it has a method it's either a notification or a request,
+      // route using s_boundChans
+      if (typeof meth === 'string') {
+        var delivered = false;
+        if (s_boundChans[o] && s_boundChans[o][s]) {
+          for (var j = 0; j < s_boundChans[o][s].length; j++) {
+            if (s_boundChans[o][s][j].win === w) {
+              s_boundChans[o][s][j].handler(o, meth, m);
+              delivered = true;
+              break;
+            }
+          }
+        }
+
+        if (!delivered && s_boundChans['*'] && s_boundChans['*'][s]) {
+          for (var j = 0; j < s_boundChans['*'][s].length; j++) {
+            if (s_boundChans['*'][s][j].win === w) {
+              s_boundChans['*'][s][j].handler(o, meth, m);
+              break;
+            }
+          }
+        }
+      }
+      // otherwise it must have an id (or be poorly formed
+      else if (typeof i != 'undefined') {
+        if (s_transIds[i]) s_transIds[i](o, meth, m);
+      }
+    };
+
+    // Setup postMessage event listeners
+    if (window.addEventListener) window.addEventListener('message', s_onMessage, false);
+    else if(window.attachEvent) window.attachEvent('onmessage', s_onMessage);
+
+    /* a messaging channel is constructed from a window and an origin.
+     * the channel will assert that all messages received over the
+     * channel match the origin
+     *
+     * Arguments to Channel.build(cfg):
+     *
+     *   cfg.window - the remote window with which we'll communicate
+     *   cfg.origin - the expected origin of the remote window, may be '*'
+     *                which matches any origin
+     *   cfg.scope  - the 'scope' of messages.  a scope string that is
+     *                prepended to message names.  local and remote endpoints
+     *                of a single channel must agree upon scope. Scope may
+     *                not contain double colons ('::').
+     *   cfg.debugOutput - A boolean value.  If true and window.console.log is
+     *                a function, then debug strings will be emitted to that
+     *                function.
+     *   cfg.debugOutput - A boolean value.  If true and window.console.log is
+     *                a function, then debug strings will be emitted to that
+     *                function.
+     *   cfg.postMessageObserver - A function that will be passed two arguments,
+     *                an origin and a message.  It will be passed these immediately
+     *                before messages are posted.
+     *   cfg.gotMessageObserver - A function that will be passed two arguments,
+     *                an origin and a message.  It will be passed these arguments
+     *                immediately after they pass scope and origin checks, but before
+     *                they are processed.
+     *   cfg.onReady - A function that will be invoked when a channel becomes "ready",
+     *                this occurs once both sides of the channel have been
+     *                instantiated and an application level handshake is exchanged.
+     *                the onReady function will be passed a single argument which is
+     *                the channel object that was returned from build().
+     */
+    return {
+      build: function(cfg) {
+        var debug = function(m) {
+          if (cfg.debugOutput && window.console && window.console.log) {
+            // try to stringify, if it doesn't work we'll let javascript's built in toString do its magic
+            try { if (typeof m !== 'string') m = JSON.stringify(m); } catch(e) { }
+            console.log("["+chanId+"] " + m);
+          }
+        };
+
+        /* browser capabilities check */
+        if (!window.postMessage) throw("jschannel cannot run this browser, no postMessage");
+        if (!window.JSON || !window.JSON.stringify || ! window.JSON.parse) {
+          throw("jschannel cannot run this browser, no JSON parsing/serialization");
+        }
+
+        /* basic argument validation */
+        if (typeof cfg != 'object') throw("Channel build invoked without a proper object argument");
+
+        if (!cfg.window || !cfg.window.postMessage) throw("Channel.build() called without a valid window argument");
+
+        /* we'd have to do a little more work to be able to run multiple channels that intercommunicate the same
+         * window...  Not sure if we care to support that */
+        if (window === cfg.window) throw("target window is same as present window -- not allowed");
+
+        // let's require that the client specify an origin.  if we just assume '*' we'll be
+        // propagating unsafe practices.  that would be lame.
+        var validOrigin = false;
+        if (typeof cfg.origin === 'string') {
+          var oMatch;
+          if (cfg.origin === "*") validOrigin = true;
+          // allow valid domains under http and https.  Also, trim paths off otherwise valid origins.
+          else if (null !== (oMatch = cfg.origin.match(/^https?:\/\/(?:[-a-zA-Z0-9_\.])+(?::\d+)?/))) {
+            cfg.origin = oMatch[0].toLowerCase();
+            validOrigin = true;
+          }
+        }
+
+        if (!validOrigin) throw ("Channel.build() called with an invalid origin");
+
+        if (typeof cfg.scope !== 'undefined') {
+          if (typeof cfg.scope !== 'string') throw 'scope, when specified, must be a string';
+          if (cfg.scope.split('::').length > 1) throw "scope may not contain double colons: '::'";
+        }
+
+        /* private variables */
+        // generate a random and psuedo unique id for this channel
+        var chanId = (function () {
+          var text = "";
+          var alpha = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+          for(var i=0; i < 5; i++) text += alpha.charAt(Math.floor(Math.random() * alpha.length));
+          return text;
+        })();
+
+        // registrations: mapping method names to call objects
+        var regTbl = { };
+        // current oustanding sent requests
+        var outTbl = { };
+        // current oustanding received requests
+        var inTbl = { };
+        // are we ready yet?  when false we will block outbound messages.
+        var ready = false;
+        var pendingQueue = [ ];
+
+        var createTransaction = function(id,origin,callbacks) {
+          var shouldDelayReturn = false;
+          var completed = false;
+
+          return {
+            origin: origin,
+            invoke: function(cbName, v) {
+              // verify in table
+              if (!inTbl[id]) throw "attempting to invoke a callback of a nonexistent transaction: " + id;
+              // verify that the callback name is valid
+              var valid = false;
+              for (var i = 0; i < callbacks.length; i++) if (cbName === callbacks[i]) { valid = true; break; }
+              if (!valid) throw "request supports no such callback '" + cbName + "'";
+
+              // send callback invocation
+              postMessage({ id: id, callback: cbName, params: v});
+            },
+            error: function(error, message) {
+              completed = true;
+              // verify in table
+              if (!inTbl[id]) throw "error called for nonexistent message: " + id;
+
+              // remove transaction from table
+              delete inTbl[id];
+
+              // send error
+              postMessage({ id: id, error: error, message: message });
+            },
+            complete: function(v) {
+              completed = true;
+              // verify in table
+              if (!inTbl[id]) throw "complete called for nonexistent message: " + id;
+              // remove transaction from table
+              delete inTbl[id];
+              // send complete
+              postMessage({ id: id, result: v });
+            },
+            delayReturn: function(delay) {
+              if (typeof delay === 'boolean') {
+                shouldDelayReturn = (delay === true);
+              }
+              return shouldDelayReturn;
+            },
+            completed: function() {
+              return completed;
+            }
+          };
+        };
+
+        var setTransactionTimeout = function(transId, timeout, method) {
+          return window.setTimeout(function() {
+            if (outTbl[transId]) {
+              // XXX: what if client code raises an exception here?
+              var msg = "timeout (" + timeout + "ms) exceeded on method '" + method + "'";
+              (1,outTbl[transId].error)("timeout_error", msg);
+              delete outTbl[transId];
+              delete s_transIds[transId];
+            }
+          }, timeout);
+        };
+
+        var onMessage = function(origin, method, m) {
+          // if an observer was specified at allocation time, invoke it
+          if (typeof cfg.gotMessageObserver === 'function') {
+            // pass observer a clone of the object so that our
+            // manipulations are not visible (i.e. method unscoping).
+            // This is not particularly efficient, but then we expect
+            // that message observers are primarily for debugging anyway.
+            try {
+              cfg.gotMessageObserver(origin, m);
+            } catch (e) {
+              debug("gotMessageObserver() raised an exception: " + e.toString());
+            }
+          }
+
+          // now, what type of message is this?
+          if (m.id && method) {
+            // a request!  do we have a registered handler for this request?
+            if (regTbl[method]) {
+              var trans = createTransaction(m.id, origin, m.callbacks ? m.callbacks : [ ]);
+              inTbl[m.id] = { };
+              try {
+                // callback handling.  we'll magically create functions inside the parameter list for each
+                // callback
+                if (m.callbacks && s_isArray(m.callbacks) && m.callbacks.length > 0) {
+                  for (var i = 0; i < m.callbacks.length; i++) {
+                    var path = m.callbacks[i];
+                    var obj = m.params;
+                    var pathItems = path.split('/');
+                    for (var j = 0; j < pathItems.length - 1; j++) {
+                      var cp = pathItems[j];
+                      if (typeof obj[cp] !== 'object') obj[cp] = { };
+                      obj = obj[cp];
+                    }
+                    obj[pathItems[pathItems.length - 1]] = (function() {
+                      var cbName = path;
+                      return function(params) {
+                        return trans.invoke(cbName, params);
+                      };
+                    })();
+                  }
+                }
+                var resp = regTbl[method](trans, m.params);
+                if (!trans.delayReturn() && !trans.completed()) trans.complete(resp);
+              } catch(e) {
+                // automagic handling of exceptions:
+                var error = "runtime_error";
+                var message = null;
+                // * if it's a string then it gets an error code of 'runtime_error' and string is the message
+                if (typeof e === 'string') {
+                  message = e;
+                } else if (typeof e === 'object') {
+                  // either an array or an object
+                  // * if it's an array of length two, then  array[0] is the code, array[1] is the error message
+                  if (e && s_isArray(e) && e.length == 2) {
+                    error = e[0];
+                    message = e[1];
+                  }
+                  // * if it's an object then we'll look form error and message parameters
+                  else if (typeof e.error === 'string') {
+                    error = e.error;
+                    if (!e.message) message = "";
+                    else if (typeof e.message === 'string') message = e.message;
+                    else e = e.message; // let the stringify/toString message give us a reasonable verbose error string
+                  }
+                }
+
+                // message is *still* null, let's try harder
+                if (message === null) {
+                  try {
+                    message = JSON.stringify(e);
+                    /* On MSIE8, this can result in 'out of memory', which
+                     * leaves message undefined. */
+                    if (typeof(message) == 'undefined')
+                      message = e.toString();
+                  } catch (e2) {
+                    message = e.toString();
+                  }
+                }
+
+                trans.error(error,message);
+              }
+            }
+          } else if (m.id && m.callback) {
+            if (!outTbl[m.id] ||!outTbl[m.id].callbacks || !outTbl[m.id].callbacks[m.callback])
+            {
+              debug("ignoring invalid callback, id:"+m.id+ " (" + m.callback +")");
+            } else {
+              // XXX: what if client code raises an exception here?
+              outTbl[m.id].callbacks[m.callback](m.params);
+            }
+          } else if (m.id) {
+            if (!outTbl[m.id]) {
+              debug("ignoring invalid response: " + m.id);
+            } else {
+              // XXX: what if client code raises an exception here?
+              if (m.error) {
+                (1,outTbl[m.id].error)(m.error, m.message);
+              } else {
+                if (m.result !== undefined) (1,outTbl[m.id].success)(m.result);
+                else (1,outTbl[m.id].success)();
+              }
+              delete outTbl[m.id];
+              delete s_transIds[m.id];
+            }
+          } else if (method) {
+            // tis a notification.
+            if (regTbl[method]) {
+              // yep, there's a handler for that.
+              // transaction is null for notifications.
+              regTbl[method](null, m.params);
+              // if the client throws, we'll just let it bubble out
+              // what can we do?  Also, here we'll ignore return values
+            }
+          }
+        };
+
+        // now register our bound channel for msg routing
+        s_addBoundChan(cfg.window, cfg.origin, ((typeof cfg.scope === 'string') ? cfg.scope : ''), onMessage);
+
+        // scope method names based on cfg.scope specified when the Channel was instantiated
+        var scopeMethod = function(m) {
+          if (typeof cfg.scope === 'string' && cfg.scope.length) m = [cfg.scope, m].join("::");
+          return m;
+        };
+
+        // a small wrapper around postmessage whose primary function is to handle the
+        // case that clients start sending messages before the other end is "ready"
+        var postMessage = function(msg, force) {
+          if (!msg) throw "postMessage called with null message";
+
+          // delay posting if we're not ready yet.
+          var verb = (ready ? "post  " : "queue ");
+          debug(verb + " message: " + JSON.stringify(msg));
+          if (!force && !ready) {
+            pendingQueue.push(msg);
+          } else {
+            if (typeof cfg.postMessageObserver === 'function') {
+              try {
+                cfg.postMessageObserver(cfg.origin, msg);
+              } catch (e) {
+                debug("postMessageObserver() raised an exception: " + e.toString());
+              }
+            }
+
+            cfg.window.postMessage(JSON.stringify(msg), cfg.origin);
+          }
+        };
+
+        var onReady = function(trans, type) {
+          debug('ready msg received');
+          if (ready) throw "received ready message while in ready state.  help!";
+
+          if (type === 'ping') {
+            chanId += '-R';
+          } else {
+            chanId += '-L';
+          }
+
+          obj.unbind('__ready'); // now this handler isn't needed any more.
+          ready = true;
+          debug('ready msg accepted.');
+
+          if (type === 'ping') {
+            obj.notify({ method: '__ready', params: 'pong' });
+          }
+
+          // flush queue
+          while (pendingQueue.length) {
+            postMessage(pendingQueue.pop());
+          }
+
+          // invoke onReady observer if provided
+          if (typeof cfg.onReady === 'function') cfg.onReady(obj);
+        };
+
+        var obj = {
+          // tries to unbind a bound message handler.  returns false if not possible
+          unbind: function (method) {
+            if (regTbl[method]) {
+              if (!(delete regTbl[method])) throw ("can't delete method: " + method);
+              return true;
+            }
+            return false;
+          },
+          bind: function (method, cb) {
+            if (!method || typeof method !== 'string') throw "'method' argument to bind must be string";
+            if (!cb || typeof cb !== 'function') throw "callback missing from bind params";
+
+            if (regTbl[method]) throw "method '"+method+"' is already bound!";
+            regTbl[method] = cb;
+            return this;
+          },
+          call: function(m) {
+            if (!m) throw 'missing arguments to call function';
+            if (!m.method || typeof m.method !== 'string') throw "'method' argument to call must be string";
+            if (!m.success || typeof m.success !== 'function') throw "'success' callback missing from call";
+
+            // now it's time to support the 'callback' feature of jschannel.  We'll traverse the argument
+            // object and pick out all of the functions that were passed as arguments.
+            var callbacks = { };
+            var callbackNames = [ ];
+
+            var pruneFunctions = function (path, obj) {
+              if (typeof obj === 'object') {
+                for (var k in obj) {
+                  if (!obj.hasOwnProperty(k)) continue;
+                  var np = path + (path.length ? '/' : '') + k;
+                  if (typeof obj[k] === 'function') {
+                    callbacks[np] = obj[k];
+                    callbackNames.push(np);
+                    delete obj[k];
+                  } else if (typeof obj[k] === 'object') {
+                    pruneFunctions(np, obj[k]);
+                  }
+                }
+              }
+            };
+            pruneFunctions("", m.params);
+
+            // build a 'request' message and send it
+            var msg = { id: s_curTranId, method: scopeMethod(m.method), params: m.params };
+            if (callbackNames.length) msg.callbacks = callbackNames;
+
+            if (m.timeout)
+              // XXX: This function returns a timeout ID, but we don't do anything with it.
+              // We might want to keep track of it so we can cancel it using clearTimeout()
+              // when the transaction completes.
+              setTransactionTimeout(s_curTranId, m.timeout, scopeMethod(m.method));
+
+            // insert into the transaction table
+            outTbl[s_curTranId] = { callbacks: callbacks, error: m.error, success: m.success };
+            s_transIds[s_curTranId] = onMessage;
+
+            // increment current id
+            s_curTranId++;
+
+            postMessage(msg);
+          },
+          notify: function(m) {
+            if (!m) throw 'missing arguments to notify function';
+            if (!m.method || typeof m.method !== 'string') throw "'method' argument to notify must be string";
+
+            // no need to go into any transaction table
+            postMessage({ method: scopeMethod(m.method), params: m.params });
+          },
+          destroy: function () {
+            s_removeBoundChan(cfg.window, cfg.origin, ((typeof cfg.scope === 'string') ? cfg.scope : ''));
+            if (window.removeEventListener) window.removeEventListener('message', onMessage, false);
+            else if(window.detachEvent) window.detachEvent('onmessage', onMessage);
+            ready = false;
+            regTbl = { };
+            inTbl = { };
+            outTbl = { };
+            cfg.origin = null;
+            pendingQueue = [ ];
+            debug("channel destroyed");
+            chanId = "";
+          }
+        };
+
+        obj.bind('__ready', onReady);
+        setTimeout(function() {
+//          postMessage({ method: scopeMethod('__ready'), params: "ping" }, true);
+        }, 0);
+
+        return obj;
+      }
+    };
+  })();
+
+  // local embedded copy of winchan: http://github.com/lloyd/winchan
+  // BEGIN WINCHAN
+
+  ;WinChan = (function() {
+    var RELAY_FRAME_NAME = "__winchan_relay_frame";
+    var CLOSE_CMD = "die";
+
+    // a portable addListener implementation
+    function addListener(w, event, cb) {
+      if(w.attachEvent) w.attachEvent('on' + event, cb);
+      else if (w.addEventListener) w.addEventListener(event, cb, false);
+    }
+
+    // a portable removeListener implementation
+    function removeListener(w, event, cb) {
+      if(w.detachEvent) w.detachEvent('on' + event, cb);
+      else if (w.removeEventListener) w.removeEventListener(event, cb, false);
+    }
+
+    // checking for IE8 or above
+    function isInternetExplorer() {
+      var rv = -1; // Return value assumes failure.
+      if (navigator.appName === 'Microsoft Internet Explorer') {
+        var ua = navigator.userAgent;
+        var re = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+        if (re.exec(ua) != null)
+          rv = parseFloat(RegExp.$1);
+      }
+      return rv >= 8;
+    }
+
+    // checking Mobile Firefox (Fennec)
+    function isFennec() {
+      try {
+        // We must check for both XUL and Java versions of Fennec.  Both have
+        // distinct UA strings.
+        var userAgent = navigator.userAgent;
+        return (userAgent.indexOf('Fennec/') != -1) ||  // XUL
+               (userAgent.indexOf('Firefox/') != -1 && userAgent.indexOf('Android') != -1);   // Java
+      } catch(e) {};
+      return false;
+    }
+
+    // feature checking to see if this platform is supported at all
+    function isSupported() {
+      return (window.JSON && window.JSON.stringify &&
+              window.JSON.parse && window.postMessage);
+    }
+
+    // given a URL, extract the origin
+    function extractOrigin(url) {
+      if (!/^https?:\/\//.test(url)) url = window.location.href;
+      var m = /^(https?:\/\/[\-_a-zA-Z\.0-9:]+)/.exec(url);
+      if (m) return m[1];
+      return url;
+    }
+
+    // find the relay iframe in the opener
+    function findRelay() {
+      var loc = window.location;
+      var frames = window.opener.frames;
+      var origin = loc.protocol + '//' + loc.host;
+      for (var i = frames.length - 1; i >= 0; i--) {
+        try {
+          if (frames[i].location.href.indexOf(origin) === 0 &&
+              frames[i].name === RELAY_FRAME_NAME)
+          {
+            return frames[i];
+          }
+        } catch(e) { }
+      }
+      return;
+    }
+
+    var isIE = isInternetExplorer();
+
+    if (isSupported()) {
+      /*  General flow:
+       *                  0. user clicks
+       *  (IE SPECIFIC)   1. caller adds relay iframe (served from trusted domain) to DOM
+       *                  2. caller opens window (with content from trusted domain)
+       *                  3. window on opening adds a listener to 'message'
+       *  (IE SPECIFIC)   4. window on opening finds iframe
+       *                  5. window checks if iframe is "loaded" - has a 'doPost' function yet
+       *  (IE SPECIFIC5)  5a. if iframe.doPost exists, window uses it to send ready event to caller
+       *  (IE SPECIFIC5)  5b. if iframe.doPost doesn't exist, window waits for frame ready
+       *  (IE SPECIFIC5)  5bi. once ready, window calls iframe.doPost to send ready event
+       *                  6. caller upon reciept of 'ready', sends args
+       */
+      return {
+        open: function(opts, cb) {
+          if (!cb) throw "missing required callback argument";
+
+          // test required options
+          var err;
+          if (!opts.url) err = "missing required 'url' parameter";
+          if (!opts.relay_url) err = "missing required 'relay_url' parameter";
+          if (err) setTimeout(function() { cb(err); }, 0);
+
+          // supply default options
+          if (!opts.window_name) opts.window_name = null;
+          if (!opts.window_features || isFennec()) opts.window_features = undefined;
+
+          // opts.params may be undefined
+
+          var iframe;
+
+          // sanity check, are url and relay_url the same origin?
+          var origin = extractOrigin(opts.url);
+          if (origin !== extractOrigin(opts.relay_url)) {
+            return setTimeout(function() {
+              cb('invalid arguments: origin of url and relay_url must match');
+            }, 0);
+          }
+
+          var messageTarget;
+
+          if (isIE) {
+            // first we need to add a "relay" iframe to the document that's served
+            // from the target domain.  We can postmessage into a iframe, but not a
+            // window
+            iframe = document.createElement("iframe");
+            // iframe.setAttribute('name', framename);
+            iframe.setAttribute('src', opts.relay_url);
+            iframe.style.display = "none";
+            iframe.setAttribute('name', RELAY_FRAME_NAME);
+            document.body.appendChild(iframe);
+            messageTarget = iframe.contentWindow;
+          }
+
+          var w = window.open(opts.url, opts.window_name, opts.window_features);
+
+          if (!messageTarget) messageTarget = w;
+
+          var req = JSON.stringify({a: 'request', d: opts.params});
+
+          // cleanup on unload
+          function cleanup() {
+            if (iframe) document.body.removeChild(iframe);
+            iframe = undefined;
+            if (w) {
+              try {
+                w.close();
+              } catch (securityViolation) {
+                // This happens in Opera 12 sometimes
+                // see https://github.com/mozilla/browserid/issues/1844
+                messageTarget.postMessage(CLOSE_CMD, origin);
+              }
+            }
+            w = messageTarget = undefined;
+          }
+
+          addListener(window, 'unload', cleanup);
+
+          function onMessage(e) {
+            try {
+              var d = JSON.parse(e.data);
+              if (d.a === 'ready') messageTarget.postMessage(req, origin);
+              else if (d.a === 'error') {
+                if (cb) {
+                  cb(d.d);
+                  cb = null;
+                }
+              } else if (d.a === 'response') {
+                removeListener(window, 'message', onMessage);
+                removeListener(window, 'unload', cleanup);
+                cleanup();
+                if (cb) {
+                  cb(null, d.d);
+                  cb = null;
+                }
+              }
+            } catch(err) { }
+          }
+
+          addListener(window, 'message', onMessage);
+
+          return {
+            close: cleanup,
+            focus: function() {
+              if (w) {
+                try {
+                  w.focus();
+                } catch (e) {
+                  // IE7 blows up here, do nothing
+                }
+              }
+            }
+          };
+        }
+      };
+    } else {
+      return {
+        open: function(url, winopts, arg, cb) {
+          setTimeout(function() { cb("unsupported browser"); }, 0);
+        }
+      };
+    }
+  })();
+
+
+
+  // END WINCHAN
+
+  var BrowserSupport = (function() {
+    var win = window,
+        nav = navigator,
+        reason;
+
+    // For unit testing
+    function setTestEnv(newNav, newWindow) {
+      nav = newNav;
+      win = newWindow;
+    }
+
+    function getInternetExplorerVersion() {
+      var rv = -1; // Return value assumes failure.
+      if (nav.appName == 'Microsoft Internet Explorer') {
+        var ua = nav.userAgent;
+        var re = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+        if (re.exec(ua) != null)
+          rv = parseFloat(RegExp.$1);
+      }
+
+      return rv;
+    }
+
+    function checkIE() {
+      var ieVersion = getInternetExplorerVersion(),
+          ieNosupport = ieVersion > -1 && ieVersion < 8;
+
+      if(ieNosupport) {
+        return "BAD_IE_VERSION";
+      }
+    }
+
+    function explicitNosupport() {
+      return checkIE();
+    }
+
+    function checkLocalStorage() {
+      // Firefox/Fennec/Chrome blow up when trying to access or
+      // write to localStorage. We must do two explicit checks, first
+      // whether the browser has localStorage.  Second, we must check
+      // whether the localStorage can be written to.  Firefox (at v11)
+      // throws an exception when querying win['localStorage']
+      // when cookies are disabled. Chrome (v17) excepts when trying to
+      // write to localStorage when cookies are disabled. If an
+      // exception is thrown, then localStorage is disabled. If no
+      // exception is thrown, hasLocalStorage will be true if the
+      // browser supports localStorage and it can be written to.
+      try {
+        var hasLocalStorage = 'localStorage' in win
+                        // Firefox will except here if cookies are disabled.
+                        && win['localStorage'] !== null;
+
+        if(hasLocalStorage) {
+          // browser has localStorage, check if it can be written to. If
+          // cookies are disabled, some browsers (Chrome) will except here.
+          win['localStorage'].setItem("test", "true");
+          win['localStorage'].removeItem("test");
+        }
+        else {
+          // Browser does not have local storage.
+          return "LOCALSTORAGE_NOT_SUPPORTED";
+        }
+      } catch(e) {
+          return "LOCALSTORAGE_DISABLED";
+      }
+    }
+
+    function checkPostMessage() {
+      if(!win.postMessage) {
+        return "POSTMESSAGE_NOT_SUPPORTED";
+      }
+    }
+
+    function checkJSON() {
+      if(!(window.JSON && window.JSON.stringify && window.JSON.parse)) {
+        return "JSON_NOT_SUPPORTED";
+      }
+    }
+
+    function isSupported() {
+      reason = explicitNosupport() || checkLocalStorage() || checkPostMessage() || checkJSON();
+
+      return !reason;
+    }
+
+
+    function getNoSupportReason() {
+      return reason;
+    }
+
+    return {
+      /**
+       * Set the test environment.
+       * @method setTestEnv
+       */
+      setTestEnv: setTestEnv,
+      /**
+       * Check whether the current browser is supported
+       * @method isSupported
+       * @returns {boolean}
+       */
+      isSupported: isSupported,
+      /**
+       * Called after isSupported, if isSupported returns false.  Gets the reason
+       * why browser is not supported.
+       * @method getNoSupportReason
+       * @returns {string}
+       */
+      getNoSupportReason: getNoSupportReason
+    };
+  }());
+
+  if (!navigator.id) {
+    navigator.id = {};
+  }
+
+  if (!navigator.id.request || navigator.id._shimmed) {
+    var ipServer = "https://login.persona.org";
+    var userAgent = navigator.userAgent;
+    // We must check for both XUL and Java versions of Fennec.  Both have
+    // distinct UA strings.
+    var isFennec = (userAgent.indexOf('Fennec/') != -1) ||  // XUL
+                     (userAgent.indexOf('Firefox/') != -1 && userAgent.indexOf('Android') != -1);   // Java
+
+    var windowOpenOpts =
+      (isFennec ? undefined :
+       "menubar=0,location=1,resizable=1,scrollbars=1,status=0,dialog=1,minimizable=1,width=700,height=375");
+
+    var w;
+
+    // table of registered observers
+    var observers = {
+      login: null,
+      logout: null,
+      ready: null
+    };
+
+    var loggedInUser;
+
+    var compatMode = undefined;
+    function checkCompat(requiredMode) {
+      if (requiredMode === true) {
+        // this deprecation warning should be re-enabled when the .watch and .request APIs become final.
+        // try { console.log("this site uses deprecated APIs (see documentation for navigator.id.request())"); } catch(e) { }
+      }
+
+      if (compatMode === undefined) compatMode = requiredMode;
+      else if (compatMode != requiredMode) {
+        throw new Error("you cannot combine the navigator.id.watch() API with navigator.id.getVerifiedEmail() or navigator.id.get()" +
+              "this site should instead use navigator.id.request() and navigator.id.watch()");
+      }
+    }
+
+    var commChan,
+        waitingForDOM = false,
+        browserSupported = BrowserSupport.isSupported();
+
+    function domReady(callback) {
+      if (document.addEventListener) {
+        document.addEventListener('DOMContentLoaded', function contentLoaded() {
+          document.removeEventListener('DOMContentLoaded', contentLoaded);
+          callback();
+        }, false);
+      } else if (document.attachEvent && document.readyState) {
+        document.attachEvent('onreadystatechange', function ready() {
+          var state = document.readyState;
+          // 'interactive' is the same as DOMContentLoaded,
+          // but not all browsers use it, sadly.
+          if (state === 'loaded' || state === 'complete' || state === 'interactive') {
+            document.detachEvent('onreadystatechange', ready);
+            callback();
+          }
+        });
+      }
+    }
+
+
+    // this is for calls that are non-interactive
+    function _open_hidden_iframe() {
+      // If this is an unsupported browser, do not even attempt to add the
+      // IFRAME as doing so will cause an exception to be thrown in IE6 and IE7
+      // from within the communication_iframe.
+      if(!browserSupported) return;
+      var doc = window.document;
+
+      // can't attach iframe and make commChan without the body
+      if (!doc.body) {
+        if (!waitingForDOM) {
+          domReady(_open_hidden_iframe);
+          waitingForDOM = true;
+        }
+        return;
+      }
+
+      try {
+        if (!commChan) {
+          var iframe = doc.createElement("iframe");
+          iframe.style.display = "none";
+          doc.body.appendChild(iframe);
+          iframe.src = ipServer + "/communication_iframe";
+          commChan = Channel.build({
+            window: iframe.contentWindow,
+            origin: ipServer,
+            scope: "mozid_ni",
+            onReady: function() {
+              // once the channel is set up, we'll fire a loaded message.  this is the
+              // cutoff point where we'll say if 'setLoggedInUser' was not called before
+              // this point, then it wont be called (XXX: optimize and improve me)
+              commChan.call({
+                method: 'loaded',
+                success: function(){
+                  // NOTE: Do not modify without reading GH-2017
+                  if (observers.ready) observers.ready();
+                }, error: function() {
+                }
+              });
+            }
+          });
+
+          commChan.bind('logout', function(trans, params) {
+            if (observers.logout) observers.logout();
+          });
+
+          commChan.bind('login', function(trans, params) {
+            if (observers.login) observers.login(params);
+          });
+
+          if (defined(loggedInUser)) {
+            commChan.notify({
+              method: 'loggedInUser',
+              params: loggedInUser
+            });
+          }
+        }
+      } catch(e) {
+        // channel building failed!  let's ignore the error and allow higher
+        // level code to handle user messaging.
+        commChan = undefined;
+      }
+    }
+
+    function defined(item) {
+      return typeof item !== "undefined";
+    }
+
+    function warn(message) {
+      try {
+        console.warn(message);
+      } catch(e) {
+        /* ignore error */
+      }
+    }
+
+    function checkDeprecated(options, field) {
+      if(defined(options[field])) {
+        warn(field + " has been deprecated");
+        return true;
+      }
+    }
+
+    function checkRenamed(options, oldName, newName) {
+      if (defined(options[oldName]) &&
+          defined(options[newName])) {
+        throw new Error("you cannot supply *both* " + oldName + " and " + newName);
+      }
+      else if(checkDeprecated(options, oldName)) {
+        options[newName] = options[oldName];
+        delete options[oldName];
+      }
+    }
+
+    function internalWatch(options) {
+      if (typeof options !== 'object') return;
+
+      if (options.onlogin && typeof options.onlogin !== 'function' ||
+          options.onlogout && typeof options.onlogout !== 'function' ||
+          options.onready && typeof options.onready !== 'function')
+      {
+        throw new Error("non-function where function expected in parameters to navigator.id.watch()");
+      }
+
+      if (!options.onlogin) throw new Error("'onlogin' is a required argument to navigator.id.watch()");
+      if (!options.onlogout) throw new Error("'onlogout' is a required argument to navigator.id.watch()");
+
+      observers.login = options.onlogin || null;
+      observers.logout = options.onlogout || null;
+      // NOTE: Do not modify without reading GH-2017
+      observers.ready = options.onready || null;
+
+      // back compat support for loggedInEmail
+      checkRenamed(options, "loggedInEmail", "loggedInUser");
+      loggedInUser = options.loggedInUser;
+
+      _open_hidden_iframe();
+    }
+
+    var api_called;
+    function getRPAPI() {
+      var rp_api = api_called;
+      if (rp_api === "request") {
+        if (observers.ready) rp_api = "watch_with_onready";
+        else rp_api = "watch_without_onready";
+      }
+
+      return rp_api;
+    }
+
+    function internalRequest(options) {
+      checkDeprecated(options, "requiredEmail");
+      checkRenamed(options, "tosURL", "termsOfService");
+      checkRenamed(options, "privacyURL", "privacyPolicy");
+
+      if (options.termsOfService && !options.privacyPolicy) {
+        warn("termsOfService ignored unless privacyPolicy also defined");
+      }
+
+      if (options.privacyPolicy && !options.termsOfService) {
+        warn("privacyPolicy ignored unless termsOfService also defined");
+      }
+
+      options.rp_api = getRPAPI();
+      // reset the api_called in case the site implementor changes which api
+      // method called the next time around.
+      api_called = null;
+
+      // focus an existing window
+      if (w) {
+        try {
+          w.focus();
+        }
+        catch(e) {
+          /* IE7 blows up here, do nothing */
+        }
+        return;
+      }
+
+      if (!BrowserSupport.isSupported()) {
+        var reason = BrowserSupport.getNoSupportReason(),
+        url = "unsupported_dialog";
+
+        if(reason === "LOCALSTORAGE_DISABLED") {
+          url = "cookies_disabled";
+        }
+
+        w = window.open(
+          ipServer + "/" + url,
+          null,
+          windowOpenOpts);
+        return;
+      }
+
+      // notify the iframe that the dialog is running so we
+      // don't do duplicative work
+      if (commChan) commChan.notify({ method: 'dialog_running' });
+
+      w = WinChan.open({
+        url: ipServer + '/sign_in',
+        relay_url: ipServer + '/relay',
+        window_features: windowOpenOpts,
+        window_name: '__persona_dialog',
+        params: {
+          method: "get",
+          params: options
+        }
+      }, function(err, r) {
+        // unpause the iframe to detect future changes in login state
+        if (commChan) {
+          // update the loggedInUser in the case that an assertion was generated, as
+          // this will prevent the comm iframe from thinking that state has changed
+          // and generating a new assertion.  IF, however, this request is not a success,
+          // then we do not change the loggedInUser - and we will let the comm frame determine
+          // if generating a logout event is the right thing to do
+          if (!err && r && r.email) {
+            commChan.notify({ method: 'loggedInUser', params: r.email });
+          }
+          commChan.notify({ method: 'dialog_complete' });
+        }
+
+        // clear the window handle
+        w = undefined;
+        if (!err && r && r.assertion) {
+          try {
+            if (observers.login) observers.login(r.assertion);
+          } catch(e) {
+            // client's observer threw an exception
+          }
+        }
+
+        // if either err indicates the user canceled the signin (expected) or a
+        // null response was sent (unexpected), invoke the .oncancel() handler.
+        if (err === 'client closed window' || !r) {
+          if (options && options.oncancel) options.oncancel();
+          delete options.oncancel;
+        }
+      });
+    };
+
+    navigator.id = {
+      request: function(options) {
+        if (this != navigator.id)
+          throw new Error("all navigator.id calls must be made on the navigator.id object");
+        options = options || {};
+        checkCompat(false);
+        api_called = "request";
+        // returnTo is used for post-email-verification redirect
+        if (!options.returnTo) options.returnTo = document.location.pathname;
+        return internalRequest(options);
+      },
+      watch: function(options) {
+        if (this != navigator.id)
+          throw new Error("all navigator.id calls must be made on the navigator.id object");
+        checkCompat(false);
+        internalWatch(options);
+      },
+      // logout from the current website
+      // The callback parameter is DEPRECATED, instead you should use the
+      // the .onlogout observer of the .watch() api.
+      logout: function(callback) {
+        if (this != navigator.id)
+          throw new Error("all navigator.id calls must be made on the navigator.id object");
+        // allocate iframe if it is not allocated
+        _open_hidden_iframe();
+        // send logout message if the commChan exists
+        if (commChan) commChan.notify({ method: 'logout' });
+        if (typeof callback === 'function') {
+          warn('navigator.id.logout callback argument has been deprecated.');
+          setTimeout(callback, 0);
+        }
+      },
+      // get an assertion
+      get: function(callback, passedOptions) {
+        var opts = {};
+        passedOptions = passedOptions || {};
+        opts.privacyPolicy =  passedOptions.privacyPolicy || undefined;
+        opts.termsOfService = passedOptions.termsOfService || undefined;
+        opts.privacyURL = passedOptions.privacyURL || undefined;
+        opts.tosURL = passedOptions.tosURL || undefined;
+        opts.siteName = passedOptions.siteName || undefined;
+        opts.siteLogo = passedOptions.siteLogo || undefined;
+        // api_called could have been set to getVerifiedEmail already
+        api_called = api_called || "get";
+        if (checkDeprecated(passedOptions, "silent")) {
+          // Silent has been deprecated, do nothing.  Placing the check here
+          // prevents the callback from being called twice, once with null and
+          // once after internalWatch has been called.  See issue #1532
+          if (callback) setTimeout(function() { callback(null); }, 0);
+          return;
+        }
+
+        checkCompat(true);
+        internalWatch({
+          onlogin: function(assertion) {
+            if (callback) {
+              callback(assertion);
+              callback = null;
+            }
+          },
+          onlogout: function() {}
+        });
+        opts.oncancel = function() {
+          if (callback) {
+            callback(null);
+            callback = null;
+          }
+          observers.login = observers.logout = observers.ready = null;
+        };
+        internalRequest(opts);
+      },
+      // backwards compatibility with old API
+      getVerifiedEmail: function(callback) {
+        warn("navigator.id.getVerifiedEmail has been deprecated");
+        checkCompat(true);
+        api_called = "getVerifiedEmail";
+        navigator.id.get(callback);
+      },
+      // required for forwards compatibility with native implementations
+      _shimmed: true
+    };
+  }
+}());
 ;
 
