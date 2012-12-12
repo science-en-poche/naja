@@ -219,6 +219,7 @@ window.require.define({"controllers/header_controller": function(exports, requir
       }
       if (this.loginFromTriggered) {
         this.loginFromTriggered = false;
+        this.publishEvent('loginReload', user);
         return window.location.reload();
       }
     };
@@ -464,9 +465,7 @@ window.require.define({"controllers/welcome_controller": function(exports, requi
     __extends(WelcomeController, _super);
 
     function WelcomeController() {
-      this.login = __bind(this.login, this);
-
-      this.loginTriggered = __bind(this.loginTriggered, this);
+      this.loginReload = __bind(this.loginReload, this);
       return WelcomeController.__super__.constructor.apply(this, arguments);
     }
 
@@ -475,19 +474,14 @@ window.require.define({"controllers/welcome_controller": function(exports, requi
     WelcomeController.prototype.historyURL = 'welcome';
 
     WelcomeController.prototype.initialize = function() {
-      this.subscribeEvent('loginTriggered', this.loginTriggered);
-      return this.subscribeEvent('login', this.login);
+      WelcomeController.__super__.initialize.apply(this, arguments);
+      return this.subscribeEvent('loginReload', this.loginReload);
     };
 
-    WelcomeController.prototype.loginTriggered = function() {
-      return this.loginFromTriggered = true;
-    };
-
-    WelcomeController.prototype.login = function(user) {
-      if (this.loginFromTriggered && user.get('name')) {
-        this.redirectTo("/" + (user.get('email')));
+    WelcomeController.prototype.loginReload = function(user) {
+      if (user.get('name')) {
+        return this.redirectTo("/" + (user.get('email')));
       }
-      return this.loginFromTriggered = false;
     };
 
     WelcomeController.prototype.index = function() {

@@ -6,17 +6,12 @@ module.exports = class WelcomeController extends Controller
   historyURL: 'welcome'
 
   initialize: ->
+    super
+    @subscribeEvent 'loginReload', @loginReload
 
-    @subscribeEvent 'loginTriggered', @loginTriggered
-    @subscribeEvent 'login', @login
-
-  loginTriggered: =>
-    @loginFromTriggered = yes
-
-  login: (user) =>
-    if @loginFromTriggered and user.get('name')
+  loginReload: (user) =>
+    if user.get('name')
       @redirectTo "/#{user.get('email')}"
-    @loginFromTriggered = no
 
   index: ->
     @view = new WelcomePageView()

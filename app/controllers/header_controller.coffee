@@ -21,6 +21,7 @@ module.exports = class HeaderController extends Controller
       @redirectTo '/settings/profile'
     if @loginFromTriggered
       @loginFromTriggered =no
+      @publishEvent 'loginReload', user
       window.location.reload()
 
   logoutDone: =>
