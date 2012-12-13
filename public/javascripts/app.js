@@ -1852,7 +1852,7 @@ window.require.define({"views/user/user_page_view": function(exports, require, m
       if (this.disposed) {
         return;
       }
-      ['exps'].forEach(function(attr) {
+      ['exps', 'user'].forEach(function(attr) {
         _this[attr].dispose();
         return delete _this[attr];
       });

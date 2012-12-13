@@ -25,7 +25,7 @@ module.exports = class UserPageView extends PageView
 
   dispose: ->
     return if @disposed
-    ['exps'].forEach (attr) =>
+    ['exps', 'user'].forEach (attr) =>
       this[attr].dispose()
       delete this[attr]
     super
