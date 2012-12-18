@@ -32,5 +32,6 @@ module.exports = class NewExpController extends Controller
       @checkUser()
 
   show: =>
-    @model = new User mediator.user
+    @model = new User({login: mediator.user.get('login')})
     @view = new NewExpPageView({@model})
+    @model.fetch()

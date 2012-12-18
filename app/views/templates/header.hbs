@@ -17,8 +17,8 @@
           <div class="pull-right">
             <ul class="nav">
               <li>
-                <a href="/{{email}}">
-                  <img class="img-rounded" height="24" width="24" src="{{#gravatar_small}}{{gravatar_id}}{{/gravatar_small}}"> {{#if name}}{{name}}{{else}}{{email}}{{/if}}
+                <a href="/{{login}}">
+                  <img class="img-rounded" height="24" width="24" src="{{#gravatar_small}}{{gravatar_id}}{{/gravatar_small}}"> {{#if login_is_set}}{{login}}{{else}}{{email}}{{/if}}
                 </a>
               </li>
               <li><a href="/new"><i class="icon-plus-sign icon-white"></i> new exp</a></li>

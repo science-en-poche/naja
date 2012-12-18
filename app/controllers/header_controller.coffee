@@ -16,7 +16,7 @@ module.exports = class HeaderController extends Controller
     @subscribeEvent 'logoutClicked', @triggerLogout
 
   login: (user) =>
-    if !user.get('name')
+    if !user.get('login_is_set')
       alert('will redirect to settings')
       #@redirectTo '/settings/profile'
     if @loginFromTriggered

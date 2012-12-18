@@ -7,7 +7,6 @@ UserView = require 'views/user/user_view'
 module.exports = class NewExpPageView extends PageView
   template: template
   className: 'new-exp-page'
-  autoRender: yes
 
   renderSubviews: ->
     # User view

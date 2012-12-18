@@ -2,7 +2,7 @@
   <div class="span3 user-container"></div>
   <div class="span6 user-exp-list-container">
     <div class="page-header">
-      <h2>{{name}}'s experiments</h2>
+      <h2>{{#if login_is_set}}{{login}}{{else}}{{email}}{{/if}}'s experiments</h2>
     </div>
   </div>
 </div>

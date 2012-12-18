@@ -10,8 +10,8 @@ module.exports = class WelcomeController extends Controller
     @subscribeEvent 'loginReload', @loginReload
 
   loginReload: (user) =>
-    if user.get('name')
-      @redirectTo "/#{user.get('email')}"
+    if user.get('login_is_set')
+      @redirectTo "/#{user.get('login')}"
 
   index: ->
     @view = new WelcomePageView()
