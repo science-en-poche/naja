@@ -1,0 +1,29 @@
+{{#if_logged_in}}
+  {{#with_user}}
+
+    <form class="form-horizontal">
+      <div class="control-group">
+        <label class="control-label" for="inputName">Name</label>
+        <div class="controls">
+          <input type="text" id="inputName" class="new-exp-name" required>
+          <span class="help-block">Used by your app to identify itself.</span>
+          <span class="help-block">Only alphanumerics, '_' and '-'.</span>
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="inputDescription">Short description</label>
+        <div class="controls">
+          <textarea id="inputDescription" class="new-exp-description" placeholder="What's your experiment about?"></textarea>
+        </div>
+      </div>
+      <div class="control-group">
+        <div class="controls">
+          <button type="submit" class="new-exp-submit-button submit-form btn btn-primary">Create exp</button>
+        </div>
+      </div>
+    </form>
+
+  {{/with_user}}
+{{else}}
+  <p>You must be logged in to create an experiment</p>
+{{/if_logged_in}}

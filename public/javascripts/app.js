@@ -215,7 +215,6 @@ window.require.define({"controllers/header_controller": function(exports, requir
     HeaderController.prototype.login = function(user) {
       if (!user.get('name')) {
         alert('will redirect to settings');
-        this.redirectTo('/settings/profile');
       }
       if (this.loginFromTriggered) {
         this.loginFromTriggered = false;
@@ -242,6 +241,75 @@ window.require.define({"controllers/header_controller": function(exports, requir
     };
 
     return HeaderController;
+
+  })(Controller);
+  
+}});
+
+window.require.define({"controllers/new_exp_controller": function(exports, require, module) {
+  var Controller, NewExpController, NewExpPageView, User, mediator, utils,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  Controller = require('controllers/base/controller');
+
+  NewExpPageView = require('views/exp/new_exp_page_view');
+
+  User = require('models/user');
+
+  mediator = require('mediator');
+
+  utils = require('lib/utils');
+
+  module.exports = NewExpController = (function(_super) {
+
+    __extends(NewExpController, _super);
+
+    NewExpController.prototype.title = 'New Exp';
+
+    NewExpController.prototype.historyURL = 'new-exp';
+
+    function NewExpController() {
+      this.show = __bind(this.show, this);
+
+      this.loginStatus = __bind(this.loginStatus, this);
+
+      this.checkUser = __bind(this.checkUser, this);
+      NewExpController.__super__.constructor.apply(this, arguments);
+      _(this).extend($.Deferred());
+      utils.deferMethods({
+        deferred: this,
+        methods: ['show'],
+        onDeferral: this.checkUser
+      });
+    }
+
+    NewExpController.prototype.initialize = function() {
+      NewExpController.__super__.initialize.apply(this, arguments);
+      return this.subscribeEvent('loginStatus', this.loginStatus);
+    };
+
+    NewExpController.prototype.checkUser = function() {
+      if (mediator.user) {
+        return this.resolve();
+      }
+    };
+
+    NewExpController.prototype.loginStatus = function(status) {
+      if (status) {
+        return this.checkUser();
+      }
+    };
+
+    NewExpController.prototype.show = function() {
+      this.model = new User(mediator.user);
+      return this.view = new NewExpPageView({
+        model: this.model
+      });
+    };
+
+    return NewExpController;
 
   })(Controller);
   
@@ -1181,6 +1249,7 @@ window.require.define({"routes": function(exports, require, module) {
   
   module.exports = function(match) {
     match('', 'welcome#index');
+    match('new', 'new_exp#show');
     return match(':email', 'users#show');
   };
   
@@ -1210,6 +1279,79 @@ window.require.define({"views/base/collection_view": function(exports, require, 
     return CollectionView;
 
   })(Chaplin.CollectionView);
+  
+}});
+
+window.require.define({"views/base/form_view": function(exports, require, module) {
+  var FormView, SpinnerView, View,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  View = require('views/base/view');
+
+  SpinnerView = require('views/spinner_view');
+
+  module.exports = FormView = (function(_super) {
+
+    __extends(FormView, _super);
+
+    function FormView() {
+      this.save = __bind(this.save, this);
+
+      this.dismiss = __bind(this.dismiss, this);
+      return FormView.__super__.constructor.apply(this, arguments);
+    }
+
+    FormView.prototype.autoRender = true;
+
+    FormView.prototype.tagName = 'form';
+
+    FormView.prototype.initialize = function() {
+      var _this = this;
+      FormView.__super__.initialize.apply(this, arguments);
+      this.subscribeEvent('loginStatus', this.render);
+      this.delegate('click', '.cancel-form', this.dismiss);
+      return this.delegate('submit', function(event) {
+        event.preventDefault();
+        if (event.currentTarget.checkValidity()) {
+          return _this.save(event);
+        }
+      });
+    };
+
+    FormView.prototype.publishSave = function(response) {
+      if (this.saveEvent) {
+        return this.publishEvent(this.saveEvent, response);
+      }
+    };
+
+    FormView.prototype.dismiss = function(event) {
+      if (event != null) {
+        event.preventDefault();
+      }
+      this.trigger('dispose');
+      return this.dispose();
+    };
+
+    FormView.prototype.save = function(event) {
+      var spinner,
+        _this = this;
+      spinner = new SpinnerView({
+        container: this.$('.submit-form')
+      });
+      alert('save');
+      return this.model.save().done(function(response) {
+        _this.publishSave(response);
+        return _this.dismiss();
+      }).always(function(response) {
+        return spinner.dispose();
+      });
+    };
+
+    return FormView;
+
+  })(View);
   
 }});
 
@@ -1361,6 +1503,146 @@ window.require.define({"views/exp/exps_view": function(exports, require, module)
   
 }});
 
+window.require.define({"views/exp/new_exp_form_view": function(exports, require, module) {
+  var FormView, NewExpFormView, template,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  FormView = require('views/base/form_view');
+
+  template = require('views/templates/new_exp_form');
+
+  module.exports = NewExpFormView = (function(_super) {
+
+    __extends(NewExpFormView, _super);
+
+    function NewExpFormView() {
+      this.changeDescription = __bind(this.changeDescription, this);
+
+      this.changeName = __bind(this.changeName, this);
+
+      this.submit = __bind(this.submit, this);
+      return NewExpFormView.__super__.constructor.apply(this, arguments);
+    }
+
+    NewExpFormView.prototype.className = 'exp-create';
+
+    NewExpFormView.prototype.saveEvent = 'exp:new';
+
+    NewExpFormView.prototype.template = template;
+
+    NewExpFormView.prototype.initialize = function() {
+      NewExpFormView.__super__.initialize.apply(this, arguments);
+      this.pass('name', '.new-exp-name');
+      this.pass('description', '.new-exp-description');
+      this.delegate('keyup keydown', '.new-exp-name', this.changeName);
+      this.delegate('keyup keydown', '.new-exp-description', this.changeDescription);
+      return this.delegate('click', '.new-exp-submit-button', this.submit);
+    };
+
+    NewExpFormView.prototype.submit = function() {
+      alert('submitting: ' + JSON.stringify(this.model));
+      return this.$el.trigger('submit');
+    };
+
+    NewExpFormView.prototype.changeName = function(event) {
+      if (event.metaKey && event.keyCode === 13) {
+        return this.submit();
+      } else {
+        return this.model.set({
+          name: $(event.currentTarget).val()
+        });
+      }
+    };
+
+    NewExpFormView.prototype.changeDescription = function(event) {
+      if (event.metaKey && event.keyCode === 13) {
+        return this.submit();
+      } else {
+        return this.model.set({
+          description: $(event.currentTarget).val()
+        });
+      }
+    };
+
+    return NewExpFormView;
+
+  })(FormView);
+  
+}});
+
+window.require.define({"views/exp/new_exp_page_view": function(exports, require, module) {
+  var Exp, NewExpFormView, NewExpPageView, PageView, UserView, template,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  template = require('views/templates/new_exp_page');
+
+  PageView = require('views/base/page_view');
+
+  Exp = require('models/exp');
+
+  NewExpFormView = require('views/exp/new_exp_form_view');
+
+  UserView = require('views/user/user_view');
+
+  module.exports = NewExpPageView = (function(_super) {
+
+    __extends(NewExpPageView, _super);
+
+    function NewExpPageView() {
+      return NewExpPageView.__super__.constructor.apply(this, arguments);
+    }
+
+    NewExpPageView.prototype.template = template;
+
+    NewExpPageView.prototype.className = 'new-exp-page';
+
+    NewExpPageView.prototype.autoRender = true;
+
+    NewExpPageView.prototype.renderSubviews = function() {
+      var createNewExp,
+        _this = this;
+      this.subview('user', new UserView({
+        model: this.model,
+        container: this.$('.user-container')
+      }));
+      createNewExp = function() {
+        var newExp, newExpView;
+        newExp = new Exp({
+          owner: _this.model
+        });
+        newExpView = new NewExpFormView({
+          model: newExp,
+          container: _this.$('.new-exp-form-container')
+        });
+        newExpView.on('dispose', function() {
+          return setTimeout(createNewExp, 0);
+        });
+        return _this.subview('newExpForm', newExpView);
+      };
+      return createNewExp();
+    };
+
+    NewExpPageView.prototype.dispose = function() {
+      var _this = this;
+      if (this.disposed) {
+        return;
+      }
+      [].forEach(function(attr) {
+        _this[attr].dispose();
+        return delete _this[attr];
+      });
+      return NewExpPageView.__super__.dispose.apply(this, arguments);
+    };
+
+    return NewExpPageView;
+
+  })(PageView);
+  
+}});
+
 window.require.define({"views/header_view": function(exports, require, module) {
   var HeaderView, View, template,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -1504,6 +1786,46 @@ window.require.define({"views/login_view": function(exports, require, module) {
     };
 
     return LoginView;
+
+  })(View);
+  
+}});
+
+window.require.define({"views/spinner_view": function(exports, require, module) {
+  var SpinnerView, View, template,
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+  View = require('views/base/view');
+
+  template = require('views/templates/spinner');
+
+  module.exports = SpinnerView = (function(_super) {
+
+    __extends(SpinnerView, _super);
+
+    function SpinnerView() {
+      return SpinnerView.__super__.constructor.apply(this, arguments);
+    }
+
+    SpinnerView.prototype.autoRender = true;
+
+    SpinnerView.prototype.containerMethod = 'html';
+
+    SpinnerView.prototype.template = template;
+
+    SpinnerView.prototype.initialize = function(options) {
+      SpinnerView.__super__.initialize.apply(this, arguments);
+      return this.previous = options.container.html();
+    };
+
+    SpinnerView.prototype.dispose = function() {
+      $(this.container).html(this.previous);
+      delete this.previous;
+      return SpinnerView.__super__.dispose.apply(this, arguments);
+    };
+
+    return SpinnerView;
 
   })(View);
   
@@ -1745,6 +2067,67 @@ window.require.define({"views/templates/login": function(exports, require, modul
     return buffer;});
 }});
 
+window.require.define({"views/templates/new_exp_form": function(exports, require, module) {
+  module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+    helpers = helpers || Handlebars.helpers;
+    var buffer = "", stack1, foundHelper, tmp1, self=this, functionType="function", blockHelperMissing=helpers.blockHelperMissing;
+
+  function program1(depth0,data) {
+    
+    var buffer = "", stack1;
+    buffer += "\n  ";
+    foundHelper = helpers.with_user;
+    stack1 = foundHelper || depth0.with_user;
+    tmp1 = self.program(2, program2, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.noop;
+    if(foundHelper && typeof stack1 === functionType) { stack1 = stack1.call(depth0, tmp1); }
+    else { stack1 = blockHelperMissing.call(depth0, stack1, tmp1); }
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += "\n";
+    return buffer;}
+  function program2(depth0,data) {
+    
+    
+    return "\n\n    <form class=\"form-horizontal\">\n      <div class=\"control-group\">\n        <label class=\"control-label\" for=\"inputName\">Name</label>\n        <div class=\"controls\">\n          <input type=\"text\" id=\"inputName\" class=\"new-exp-name\" required>\n          <span class=\"help-block\">Used by your app to identify itself.</span>\n          <span class=\"help-block\">Only alphanumerics, '_' and '-'.</span>\n        </div>\n      </div>\n      <div class=\"control-group\">\n        <label class=\"control-label\" for=\"inputDescription\">Short description</label>\n        <div class=\"controls\">\n          <textarea id=\"inputDescription\" class=\"new-exp-description\" placeholder=\"What's your experiment about?\"></textarea>\n        </div>\n      </div>\n      <div class=\"control-group\">\n        <div class=\"controls\">\n          <button type=\"submit\" class=\"new-exp-submit-button submit-form btn btn-primary\">Create exp</button>\n        </div>\n      </div>\n    </form>\n\n  ";}
+
+  function program4(depth0,data) {
+    
+    
+    return "\n  <p>You must be logged in to create an experiment</p>\n";}
+
+    foundHelper = helpers.if_logged_in;
+    stack1 = foundHelper || depth0.if_logged_in;
+    tmp1 = self.program(1, program1, data);
+    tmp1.hash = {};
+    tmp1.fn = tmp1;
+    tmp1.inverse = self.program(4, program4, data);
+    if(foundHelper && typeof stack1 === functionType) { stack1 = stack1.call(depth0, tmp1); }
+    else { stack1 = blockHelperMissing.call(depth0, stack1, tmp1); }
+    if(stack1 || stack1 === 0) { buffer += stack1; }
+    buffer += "\n";
+    return buffer;});
+}});
+
+window.require.define({"views/templates/new_exp_page": function(exports, require, module) {
+  module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+    helpers = helpers || Handlebars.helpers;
+    var foundHelper, self=this;
+
+
+    return "<div class=\"row-fluid\">\n  <div class=\"span3 user-container\"></div>\n  <div class=\"span6 new-exp-form-container\">\n    <div class=\"page-header\">\n      <h2>New experiment</h2>\n    </div>\n  </div>\n</div>\n";});
+}});
+
+window.require.define({"views/templates/spinner": function(exports, require, module) {
+  module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+    helpers = helpers || Handlebars.helpers;
+    var foundHelper, self=this;
+
+
+    return "<img class=\"spinner\" src=\"/images/spinner.gif\" />\n";});
+}});
+
 window.require.define({"views/templates/user": function(exports, require, module) {
   module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
     helpers = helpers || Handlebars.helpers;
@@ -1852,7 +2235,7 @@ window.require.define({"views/user/user_page_view": function(exports, require, m
       if (this.disposed) {
         return;
       }
-      ['exps', 'user'].forEach(function(attr) {
+      ['exps'].forEach(function(attr) {
         _this[attr].dispose();
         return delete _this[attr];
       });

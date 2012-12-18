@@ -18,7 +18,7 @@ module.exports = class HeaderController extends Controller
   login: (user) =>
     if !user.get('name')
       alert('will redirect to settings')
-      @redirectTo '/settings/profile'
+      #@redirectTo '/settings/profile'
     if @loginFromTriggered
       @loginFromTriggered =no
       @publishEvent 'loginReload', user
