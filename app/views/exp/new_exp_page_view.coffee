@@ -14,15 +14,9 @@ module.exports = class NewExpPageView extends PageView
       model: @model
       container: @$('.user-container')
 
-    createNewExp = =>
-      newExp = new Exp({owner: @model})
-      newExpView = new NewExpFormView
-        model: newExp,
-        container: @$('.new-exp-form-container')
-      newExpView.on 'dispose', =>
-        setTimeout createNewExp, 0
-      @subview 'newExpForm', newExpView
-    createNewExp()
+    @subview 'newExpForm', new NewExpFormView
+      model: new Exp({owner: @model}),
+      container: @$('.new-exp-form-container')
 
   dispose: ->
     return if @disposed

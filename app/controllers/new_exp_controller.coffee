@@ -22,6 +22,7 @@ module.exports = class NewExpController extends Controller
   initialize: ->
     super
     @subscribeEvent 'loginStatus', @loginStatus
+    @subscribeEvent 'exp:new', @expCreated
 
   checkUser: =>
     if mediator.user
@@ -30,6 +31,9 @@ module.exports = class NewExpController extends Controller
   loginStatus: (status) =>
     if status
       @checkUser()
+
+  expCreated: (response) =>
+    @redirectTo "/#{@model.get('login')}"
 
   show: =>
     @model = new User({login: mediator.user.get('login')})

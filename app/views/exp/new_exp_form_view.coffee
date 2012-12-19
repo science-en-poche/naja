@@ -15,8 +15,8 @@ module.exports = class NewExpFormView extends FormView
     @delegate 'click', '.new-exp-submit-button', @submit
 
   submit: =>
-    alert('submitting: ' + JSON.stringify(@model))
     @$el.trigger('submit')
+    false
 
   # Update model data by default, save on ⌘R.
   changeName: (event) =>
@@ -27,7 +27,4 @@ module.exports = class NewExpFormView extends FormView
 
   # Update model data by default, save on ⌘R.
   changeDescription: (event) =>
-    if event.metaKey and event.keyCode is 13
-      @submit()
-    else
-      @model.set(description: $(event.currentTarget).val())
+    @model.set(description: $(event.currentTarget).val())
