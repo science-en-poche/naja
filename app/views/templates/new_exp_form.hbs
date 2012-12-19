@@ -7,18 +7,19 @@
         <div class="controls">
           <input type="text" id="inputName" class="new-exp-name" required>
           <span class="help-block">Used by your app to identify itself.</span>
-          <span class="help-block">Only alphanumerics, '_' and '-'.</span>
+          <span class="help-block">Only alphanumerics, <code>_</code> and <code>-</code>.</span>
         </div>
       </div>
       <div class="control-group">
-        <label class="control-label" for="inputDescription">Short description</label>
+        <label class="control-label" for="inputDescription">Description</label>
         <div class="controls">
-          <textarea id="inputDescription" class="new-exp-description" placeholder="What's your experiment about?"></textarea>
+          <input type="text" id="inputDescription" class="input-block-level new-exp-description" placeholder="What's your experiment about?">
+          <span class="help-block">Optional.</span>
         </div>
       </div>
       <div class="control-group">
         <div class="controls">
-          <button type="submit" class="new-exp-submit-button submit-form btn btn-primary">Create exp</button>
+          <button type="submit" class="new-exp-submit-button submit-form btn btn-primary">Create experiment</button>
         </div>
       </div>
     </form>

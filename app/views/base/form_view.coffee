@@ -3,7 +3,7 @@ SpinnerView = require 'views/spinner_view'
 
 module.exports = class FormView extends View
   autoRender: yes
-  tagName: 'form'
+  tagName: 'div'
 
   initialize: ->
     super

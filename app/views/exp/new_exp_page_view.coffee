@@ -9,11 +9,6 @@ module.exports = class NewExpPageView extends PageView
   className: 'new-exp-page'
 
   renderSubviews: ->
-    # User view
-    @subview 'user', new UserView
-      model: @model
-      container: @$('.user-container')
-
     @subview 'newExpForm', new NewExpFormView
       model: new Exp({owner: @model}),
       container: @$('.new-exp-form-container')
