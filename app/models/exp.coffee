@@ -5,4 +5,12 @@ module.exports = class Exp extends Model
   urlKey: 'name'
 
   urlPath: ->
-    "/users/#{@get('owner').get('login')}/exps/"
+    owner = if @owner?
+      @owner
+    else
+      @get('owner')
+    login = if owner.login?
+      owner.login
+    else
+      owner.get('login')
+    "/users/#{login}/exps/"

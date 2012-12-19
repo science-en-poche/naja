@@ -2,7 +2,7 @@ template = require 'views/templates/user_page'
 PageView = require 'views/base/page_view'
 Collection = require 'models/base/collection'
 Exp = require 'models/exp'
-ExpsView = require 'views/exp/exps_view'
+ExpsCollectionView = require 'views/exp/exps_collection_view'
 UserView = require 'views/user/user_view'
 
 module.exports = class UserPageView extends PageView
@@ -18,7 +18,7 @@ module.exports = class UserPageView extends PageView
     # Main exps collection.
     @exps = new Collection null, model: Exp
     @exps.url = @model.url('/exps/')
-    @subview 'exps', new ExpsView
+    @subview 'exps', new ExpsCollectionView
       collection: @exps,
       container: @$('.user-exp-list-container')
     @exps.fetch()
