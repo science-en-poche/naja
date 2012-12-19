@@ -1,30 +1,33 @@
 {{#if_logged_in}}
   {{#with_user}}
 
-    <form class="form-horizontal">
-      <div class="control-group">
-        <label class="control-label" for="inputName">Name</label>
-        <div class="controls">
-          <input type="text" id="inputName" class="new-exp-name" required>
-          <span class="help-block">Used by your app to identify itself.</span>
-          <span class="help-block">Only alphanumerics, <code>_</code> and <code>-</code>.</span>
+    <div class="control-group">
+      <label class="control-label" for="inputName">Name</label>
+      <div class="controls">
+        <input type="text" id="inputName" class="new-exp-name"
+          required maxlength=50 pattern="[a-zA-Z][a-zA-Z0-9_-]+[a-zA-Z0-9]">
+        <div class="help-block">
+          Used by your app to identify itself.
+          <ul>
+            <li>Must be at least three characters long</li>
+            <li>Can contain letters, numbers, <code>_</code> and <code>-</code></li>
+            <li>Must start with a letter, and end with a letter or a number</li>
+          </ul>
         </div>
       </div>
-      <div class="control-group">
-        <label class="control-label" for="inputDescription">Description</label>
-        <div class="controls">
-          <input type="text" id="inputDescription" class="input-block-level new-exp-description" placeholder="What's your experiment about?">
-          <span class="help-block">Optional.</span>
-        </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="inputDescription">Description</label>
+      <div class="controls">
+        <input type="text" id="inputDescription" class="input-block-level new-exp-description"
+          placeholder="What's your experiment about? (Optional)" maxlength=300>
       </div>
-      <div class="control-group">
-        <div class="controls">
-          <button type="submit" class="new-exp-submit-button submit-form btn btn-primary">Create experiment</button>
-        </div>
+    </div>
+    <div class="control-group">
+      <div class="controls">
+        <button type="submit" data-loading-text="Submitting..." class="new-exp-submit-button submit-form disabled btn btn-primary">Create experiment</button>
       </div>
-    </form>
+    </div>
 
   {{/with_user}}
-{{else}}
-  <p>You must be logged in to create an experiment</p>
 {{/if_logged_in}}

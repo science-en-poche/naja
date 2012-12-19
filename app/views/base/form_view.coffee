@@ -3,7 +3,7 @@ SpinnerView = require 'views/spinner_view'
 
 module.exports = class FormView extends View
   autoRender: yes
-  tagName: 'div'
+  tagName: 'form'
 
   initialize: ->
     super
@@ -13,6 +13,10 @@ module.exports = class FormView extends View
       event.preventDefault()
       @save event if event.currentTarget.checkValidity()
 
+  render: =>
+    super
+    @submitButton = @$('.submit-form')
+
   publishSave: (response) ->
     @publishEvent @saveEvent, response if @saveEvent
 
@@ -21,11 +25,18 @@ module.exports = class FormView extends View
     @trigger 'dispose'
     @dispose()
 
+  saveDone: (response) =>
+    @publishSave response
+    @dismiss()
+
+  saveFail: (response) =>
+
+  saveAlways: (response) =>
+    @submitButton.button('reset')
+
   save: (event) =>
-    spinner = new SpinnerView container: @$('.submit-form')
+    @submitButton.button('loading')
     @model.save()
-      .done (response) =>
-        @publishSave response
-        @dismiss()
-      .always (response) =>
-        spinner.dispose()
+      .done(@saveDone)
+      .fail(@saveFail)
+      .always(@saveAlways)

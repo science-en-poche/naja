@@ -31,6 +31,8 @@ module.exports = class NewExpController extends Controller
   loginStatus: (status) =>
     if status
       @checkUser()
+    else
+      @redirectTo '/'
 
   expCreated: (response) =>
     @redirectTo "/#{@model.get('login')}"

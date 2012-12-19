@@ -6,3 +6,7 @@ module.exports = class UserView extends View
   tagName: 'div'
   template: template
   autoRender: yes
+
+  initialize: ->
+    super
+    @modelBind 'change', @render

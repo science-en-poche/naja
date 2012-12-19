@@ -2,7 +2,7 @@ FormView = require 'views/base/form_view'
 template = require 'views/templates/new_exp_form'
 
 module.exports = class NewExpFormView extends FormView
-  className: 'exp-create'
+  className: 'exp-create form-horizontal'
   saveEvent: 'exp:new'
   template: template
 
@@ -12,19 +12,43 @@ module.exports = class NewExpFormView extends FormView
     @pass 'description', '.new-exp-description'
     @delegate 'keyup keydown', '.new-exp-name', @changeName
     @delegate 'keyup keydown', '.new-exp-description', @changeDescription
-    @delegate 'click', '.new-exp-submit-button', @submit
 
-  submit: =>
-    @$el.trigger('submit')
-    false
+  render: =>
+    super
+    @newExpName = @$('.new-exp-name')
+    @newExpSubmitButton = @$('.new-exp-submit-button')
 
-  # Update model data by default, save on ⌘R.
-  changeName: (event) =>
-    if event.metaKey and event.keyCode is 13
-      @submit()
+  saveDone: (response) =>
+    super
+
+  saveFail: (response) =>
+    super
+    responseText = JSON.parse(response.responseText)
+    title = 'Oops!'
+    content = responseText.message
+    if responseText.type == 'NotUniqueError'
+      content = 'You already have an exp with this name'
     else
-      @model.set(name: $(event.currentTarget).val())
+      title += ' There was an unknown error...'
+    @newExpName.popover
+      trigger: 'manual'
+      title: title
+      content: content
+    @newExpName.popover('show')
+    @hasPopOver = true
 
-  # Update model data by default, save on ⌘R.
+  saveAlways: (response) =>
+    super
+
+  changeName: (event) =>
+    oldval = @model.get('name')
+    newval = $(event.currentTarget).val()
+    if oldval != newval
+      @model.set(name: $(event.currentTarget).val())
+      @newExpSubmitButton.toggleClass('disabled', !@el.checkValidity())
+      if @hasPopOver
+        @newExpName.popover('hide')
+        @hasPopOver = false
+
   changeDescription: (event) =>
     @model.set(description: $(event.currentTarget).val())
