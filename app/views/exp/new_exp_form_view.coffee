@@ -41,10 +41,13 @@ module.exports = class NewExpFormView extends FormView
     super
 
   changeName: (event) =>
-    oldval = @model.get('name')
+    # We use 'name_claim' as the attribute to make sure 'name' isn't set when
+    # the model gets POSTed to the server. That way the POST url is
+    # (...)/users/<login>/exps/ instead of (...)/users/<login>/exps/<name>
+    oldval = @model.get('name_claim')
     newval = $(event.currentTarget).val()
     if oldval != newval
-      @model.set(name: $(event.currentTarget).val())
+      @model.set(name_claim: $(event.currentTarget).val())
       @newExpSubmitButton.toggleClass('disabled', !@el.checkValidity())
       if @hasPopOver
         @newExpName.popover('hide')
