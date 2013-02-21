@@ -19,7 +19,8 @@ module.exports = class BrowserID extends ServiceProvider
 
   ajax: (type, url, data) ->
     url = @baseUrl + url
-    $.ajax {url, data, type, dataType: 'json'}
+    $.ajax {url, data, type, dataType: 'json', xhrFields:
+      withCredentials: true}
 
   # Trigger login popup
   triggerLogin: (loginContext) ->
@@ -27,7 +28,6 @@ module.exports = class BrowserID extends ServiceProvider
 
   # Callback for the assertion ajax call
   loginHandler: (response, status) =>
-
     eventPayload = {provider: this, response: response}
     if status is 'error'
       @publishEvent 'loginFail', eventPayload
