@@ -19,7 +19,7 @@ module.exports = class UserPageView extends PageView
     @exps = new Collection null, model: Exp
     @exps.url = @model.url('/exps/')
     @subview 'exps', new ExpsCollectionView
-      collection: @exps,
+      collection: @exps
       container: @$('.user-exp-list-container')
     @exps.fetch()
 
