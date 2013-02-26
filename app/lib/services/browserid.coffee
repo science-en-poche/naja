@@ -19,8 +19,7 @@ module.exports = class BrowserID extends ServiceProvider
 
   ajax: (type, url, data) ->
     url = @baseUrl + url
-    $.ajax {url, data, type, dataType: 'json', xhrFields:
-      withCredentials: true}
+    $.ajax {url, data, type, dataType: 'json'}
 
   # Trigger login popup
   triggerLogin: (loginContext) ->

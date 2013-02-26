@@ -38,6 +38,11 @@ module.exports = class SessionController extends Controller
     # Initiate logout
     @subscribeEvent '!logout', @triggerLogout
 
+    # Tell jQuery to send in credentials with CORS ajax
+    $.ajaxPrefilter (options, originalOptions, jqXHR) ->
+      options.xhrFields =
+        withCredentials: true
+
     # Determine the logged-in state
     @getSession()
 
