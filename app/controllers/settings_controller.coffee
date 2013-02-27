@@ -1,12 +1,12 @@
 Controller = require 'controllers/base/controller'
-NewExpPageView = require 'views/exp/new_exp_page_view'
+SettingsPageView = require 'views/settings/settings_page_view'
 User = require 'models/user'
 mediator = require 'mediator'
 utils = require 'lib/utils'
 
-module.exports = class NewExpController extends Controller
-  title: 'New Exp'
-  historyURL: 'new-exp'
+module.exports = class SettingsController extends Controller
+  title: 'Settings'
+  historyURL: 'settings'
 
   constructor: ->
     super
@@ -16,13 +16,13 @@ module.exports = class NewExpController extends Controller
 
     utils.deferMethods
       deferred: this
-      methods: ['show']
+      methods: ['show', 'profile']
       onDeferral: @checkUser
 
   initialize: ->
     super
     @subscribeEvent 'loginStatus', @loginStatus
-    @subscribeEvent 'exp:new', @expCreated
+    @subscribeEvent 'user:change', @updateUserLogin
 
   checkUser: =>
     if mediator.user
@@ -32,10 +32,13 @@ module.exports = class NewExpController extends Controller
     if status
       @checkUser()
 
-  expCreated: (response) =>
-    @redirectTo "/#{@model.get('login')}"
+  updateUserLogin: ->
+    window.location.reload()
 
   show: =>
+    @redirectTo '/settings/profile'
+
+  profile: =>
     @model = new User({login: mediator.user.get('login')})
-    @view = new NewExpPageView({@model})
+    @view = new SettingsPageView({@model})
     @model.fetch()

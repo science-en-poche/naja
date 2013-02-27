@@ -20,25 +20,22 @@ module.exports = class HeaderController extends Controller
     if @loginFromTriggered
       @loginFromTriggered = no
 
-      # If the login isn't set, go to settings
-      if !user.get('login_is_set')
-        alert('will redirect to settings')
-        #window.location = '/settings/profile'
-
-      # If we're at the welcome page, go to user's home
-      if window.location.pathname == '/'
-        console.log "reloading to #{user.get('login')}"
+      if !user.get('login_is_set') and window.location.pathname != '/settings/profile'
+        # If the login isn't set, go to settings
+        window.location = '/settings/profile'
+      else if window.location.pathname == '/'
+        # If we're at the welcome page, go to user's home
         window.location = "/#{user.get('login')}"
       else
-        # Otherwise, just reload the current page
+        # Otherwise, just reload the page
         window.location.reload()
 
     else
 
       # If the login isn't set, go to settings
-      if !user.get('login_is_set')
-        alert('will redirect to settings')
-        #@redirectTo '/settings/profile'
+      if !user.get('login_is_set') and window.location.pathname != '/settings/profile'
+        console.log "redirecting to settings"
+        @redirectTo '/settings/profile'
 
   logoutDone: =>
     if @logoutFromTriggered

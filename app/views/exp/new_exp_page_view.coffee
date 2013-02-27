@@ -2,7 +2,6 @@ template = require 'views/templates/new_exp_page'
 PageView = require 'views/base/page_view'
 Exp = require 'models/exp'
 NewExpFormView = require 'views/exp/new_exp_form_view'
-UserView = require 'views/user/user_view'
 
 module.exports = class NewExpPageView extends PageView
   template: template

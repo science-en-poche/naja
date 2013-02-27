@@ -1,0 +1,24 @@
+{{#if_logged_in}}
+  {{#with_user}}
+
+    <div class="row-fluid">
+      <div class="span3">
+        <div class="well" style="max-width: 340px; padding: 8px 0;">
+          <ul class="nav nav-list">
+            <li class="nav-header">
+                  <img class="img-rounded" height="24" width="24" src="{{#gravatar_small}}{{gravatar_id}}{{/gravatar_small}}"> {{#if login_is_set}}{{login}}{{else}}{{email}}{{/if}}
+            </li>
+            <li class="active"><a href="/settings/profile">Profile</a></li>
+            <li><a href="#">Other settings</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="span6 settings-profile-form-container">
+        <div class="page-header">
+          <h2>Public profile</h2>
+        </div>
+      </div>
+    </div>
+
+  {{/with_user}}
+{{/if_logged_in}}
