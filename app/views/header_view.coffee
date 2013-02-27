@@ -10,11 +10,17 @@ module.exports = class HeaderView extends View
 
   initialize: ->
     super
-    @subscribeEvent 'loginStatus', @render
-    @subscribeEvent 'startupController', @render
+    @subscribeEvent 'loginStatus', @loginRender
+    @subscribeEvent 'loginTriggered', =>
+      @loginStatusReload = yes
+    @subscribeEvent 'logoutTriggered', =>
+      @loginStatusReload = yes
 
     @delegate 'click', '.browserid-login', @loginClicked
     @delegate 'click', '.browserid-logout', @logoutClicked
+
+  loginRender: =>
+    @render() unless @loginStatusReload
 
   loginClicked: =>
     @publishEvent 'loginClicked'
