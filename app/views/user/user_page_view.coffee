@@ -11,16 +11,18 @@ module.exports = class UserPageView extends PageView
 
   renderSubviews: ->
     # User view
-    @subview 'user', new UserView
+    @subview('user', new UserView
       model: @model
       container: @$('.user-container')
+    )
 
     # Main exps collection.
     @exps = new Collection null, model: Exp
     @exps.url = @model.url('/exps/')
-    @subview 'exps', new ExpsCollectionView
+    @subview('exps', new ExpsCollectionView
       collection: @exps
       container: @$('.user-exp-list-container')
+    )
     @exps.fetch()
 
   dispose: ->
