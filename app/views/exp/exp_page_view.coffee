@@ -11,9 +11,10 @@ module.exports = class ExpPageView extends PageView
     # Main results view.
     @results = new Collection()
     @results.url = @model.url('/results/')
-    @subview 'results', new ResultsCollectionView
+    @subview('results', new ResultsCollectionView
       collection: @results,
       container: @$('.exp-result-table-container')
+    )
     @results.fetch()
 
   dispose: ->

@@ -9,9 +9,10 @@ module.exports = class NewExpPageView extends PageView
   className: 'new-exp-page'
 
   renderSubviews: ->
-    @subview 'newExpForm', new NewExpFormView
+    @subview('newExpForm', new NewExpFormView
       model: new Exp({owner: @model}),
       container: @$('.new-exp-form-container')
+    )
 
   dispose: ->
     return if @disposed
