@@ -1,10 +1,18 @@
 <div class="row-fluid">
-  <h1>{{owner.id}} / {{name}} <small>{{description}}</small></h1>
-  <hr>
-  <div class="span6">
-    <h2>Results</h2>
+  <div class="offset2 span8">
+    <h1>{{#linkTo 'user' owner}}{{owner.id}}{{/linkTo}} / {{name}}</h1>
+    <h2><small>{{description}}</small></h2>
   </div>
-  <div class="span6">
+</div>
+<div class="row-fluid">
+  <div class="offset2 span4">
+    <h2>Results</h2>
+    <hr>
+    blabla
+  </div>
+  <div class="span4">
     <h2>Graph</h2>
+    <hr>
+    blabla
   </div>
 </div>

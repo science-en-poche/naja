@@ -2,6 +2,6 @@ App = require 'app'
 
 
 App.Router.map ->
-  @resource 'about'
+  @route 'about'
   @resource 'user', {path: '/:user_id'}, ->
-    @route 'exp', {path: '/:exp_id'}
+    @resource 'user.exp', {path: '/:exp_id'}
