@@ -26,7 +26,7 @@ require 'models/Exp'
 
 
 # ===== Views =====
-
+require 'views/persona'
 
 
 # ===== Controllers =====
@@ -42,6 +42,7 @@ require 'helpers/plural'
 # ===== Templates =====
 require 'templates/application'
 require 'templates/header'
+require 'templates/persona'
 require 'templates/loading'
 require 'templates/index'
 require 'templates/users'
