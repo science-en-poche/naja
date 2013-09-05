@@ -2,5 +2,10 @@ App = require 'app'
 
 module.exports = App.UserExpRoute = Em.Route.extend
   model: (params) ->
-    console.log "UserExpRoute, user_id: #{params.user_id}, exp_id: #{params.exp_id}"
-    App.Exp.find(params.exp_id)
+    user = @modelFor('user')
+    hash = CryptoJS.SHA256("#{user.id}/#{params.exp_name}")
+    exp_id = hash.toString(CryptoJS.enc.Hex)
+    App.Exp.find(exp_id)
+
+  serialize: (model) ->
+    {exp_name: model.get('name')}

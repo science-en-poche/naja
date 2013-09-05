@@ -31,6 +31,8 @@ exports.config =
           ]
         after: [
           'vendor/scripts/ember-bootstrap-latest.js'
+          'vendor/scripts/crypto-js-3.1.2/rollups/sha256.js'
+          'vendor/scripts/crypto-js-3.1.2/components/enc-base64-min.js'
         ]
 
     stylesheets:
