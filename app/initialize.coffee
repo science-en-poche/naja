@@ -10,6 +10,7 @@ require 'router'
 
 
 # ===== Routes =====
+require 'routes/LoadingRoute'
 require 'routes/IndexRoute'
 require 'routes/UserIndexRoute'
 require 'routes/UserExpRoute'
@@ -40,6 +41,7 @@ require 'helpers/plural'
 
 # ===== Templates =====
 require 'templates/application'
+require 'templates/loading'
 require 'templates/index'
 require 'templates/users'
 require 'templates/exps'
