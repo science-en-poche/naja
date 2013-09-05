@@ -1,0 +1,8 @@
+App = require 'app'
+
+module.exports = App.{{#camelize}}{{name}}{{/camelize}}Route = Ember.Route.extend
+  model: (params) ->
+    @_super arguments...
+
+  setupController: (controller, model) ->
+    @_super arguments...

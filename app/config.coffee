@@ -1,15 +1,10 @@
-config = {api: {}}
+App = require 'app'
 
-heroku_dev = true
+# linkTo and action handlebars helpers are looked up if not quoted
+Ember.ENV.HELPER_PARAM_LOOKUPS = yes
 
-if heroku_dev
-  config.api.root = 'http://yelandur.herokuapp.com'
-else
-  re = new RegExp(document.domain.replace(/\./g, '\\.') + '[^\\/]*', 'i')
-  domain = document.documentURI.match(re)[0]
-  scheme = document.documentURI.match(/^.*\/\//)[0]
-  config.api.root = scheme + 'api.' + domain
-
-config.api.versionRoot = config.api.root + '/v1'
-
-module.exports = config
+# some configuration
+module.exports = App.CONFIG =
+  api:
+    url: 'http://api.dev.naja.cc:5000'
+    version: 'v1'

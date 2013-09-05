@@ -1,0 +1,12 @@
+<h2>Experiments</h2>
+<ul class="media-list">
+  {{#each exps}}
+  <li class="media">
+  <a class="pull-left" href="#">{{exp-img this class="img-polaroid"}}</a>
+    <div class="media-body">
+      <h4 class="media-heading"><a href="#">{{name}}</a> <small>by {{owner.id}}</small></h4>
+      <h4><small>{{plural nProfiles word=profile}}, {{plural nResults word=result}}</small></h4>
+    </div>
+  </li>
+  {{/each}}
+</ul>

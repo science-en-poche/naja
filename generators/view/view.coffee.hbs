@@ -1,5 +1,4 @@
-View = require 'views/base/view'
-template = require 'views/templates/{{name}}'
+App = require 'app'
 
-module.exports = class {{#camelize}}{{name}}{{/camelize}}View extends View
-  template: template
+module.exports = App.{{#camelize}}{{name}}{{/camelize}}View = Ember.View.extend
+  templateName: '{{name}}'

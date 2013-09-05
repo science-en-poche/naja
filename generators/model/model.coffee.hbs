@@ -1,3 +1,4 @@
-Model = require 'models/base/model'
+App = require 'app'
 
-module.exports = class {{#camelize}}{{name}}{{/camelize}} extends Model
+module.exports = App.{{#camelize}}{{name}}{{/camelize}} = DS.Model.extend
+
