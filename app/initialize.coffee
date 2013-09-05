@@ -11,8 +11,7 @@ require 'router'
 
 # ===== Routes =====
 require 'routes/IndexRoute'
-require 'routes/UserIndexRoute'
-require 'routes/UserExpIndexRoute'
+require 'routes/UserRoute'
 
 
 # ===== Store =====
@@ -41,8 +40,7 @@ require 'helpers/plural'
 # ===== Templates =====
 require 'templates/application'
 require 'templates/index'
-require 'templates/index/users'
-require 'templates/index/exps'
+require 'templates/users'
+require 'templates/exps'
 require 'templates/about'
 require 'templates/user'
-require 'templates/exp'
