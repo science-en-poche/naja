@@ -41,6 +41,7 @@ require 'helpers/plural'
 
 # ===== Templates =====
 require 'templates/application'
+require 'templates/header'
 require 'templates/loading'
 require 'templates/index'
 require 'templates/users'
