@@ -10,6 +10,7 @@ require 'router'
 
 
 # ===== Routes =====
+require 'routes/ApplicationRoute'
 require 'routes/IndexRoute'
 require 'routes/UserIndexRoute'
 require 'routes/UserExpRoute'
