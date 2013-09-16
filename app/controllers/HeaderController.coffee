@@ -4,7 +4,7 @@ module.exports = App.HeaderController = Em.Controller.extend
   isAuthenticated: false
 
   login: ->
-    @set('isAuthenticated', true)
+    @set 'isAuthenticated', true
 
   logout: ->
-    @set('isAuthenticated', false)
+    @set 'isAuthenticated', false
