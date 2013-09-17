@@ -4,7 +4,7 @@
       <div class="pull-right">
       {{#if isAuthenticated}}
         <ul class="nav">
-          <li><a href="#">{{currentUser.id}}</a></li>
+          <li>{{#linkTo 'user' currentUser}}{{gravatar-img currentUser class="img-rounded" size=24}} {{currentUser.id}}{{/linkTo}}</li>
           <li><a href="#"><i class="icon-plus-sign icon-white"></i> new exp</a></li>
           <li><a href="#"><i class="icon-cog icon-white"></i> settings</a></li>
           <li><a {{action logout}} href="#"><i class="icon-off icon-white"></i> logout</a></li>

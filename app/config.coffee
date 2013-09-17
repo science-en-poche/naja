@@ -8,3 +8,5 @@ module.exports = App.CONFIG =
   api:
     url: 'http://api.dev.naja.cc:5000'
     version: 'v1'
+
+App.CONFIG.authUrl = "#{App.CONFIG.api.url}/#{App.CONFIG.api.version}/users/me"
