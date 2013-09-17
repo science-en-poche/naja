@@ -7,4 +7,5 @@ module.exports = App.ApplicationController = Em.Controller.extend
     @set 'isAuthenticated', true
 
   logout: ->
+    console.log @currentUser
     @set 'isAuthenticated', false
