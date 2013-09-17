@@ -29,7 +29,7 @@ require 'models/Exp'
 
 
 # ===== Controllers =====
-require 'controllers/HeaderController'
+require 'controllers/ApplicationController'
 
 
 # ===== Template Helpers =====

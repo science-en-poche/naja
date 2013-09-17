@@ -1,6 +1,6 @@
 App = require 'app'
 
-module.exports = App.HeaderController = Em.Controller.extend
+module.exports = App.ApplicationController = Em.Controller.extend
   isAuthenticated: false
 
   login: ->
