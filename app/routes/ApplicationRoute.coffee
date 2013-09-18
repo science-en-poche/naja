@@ -9,10 +9,11 @@ module.exports = App.ApplicationRoute = Em.Route.extend
       dataType: 'json'
       contentType: 'application/json; charset=utf-8'
       success: (json) ->
-        userId = json.user.id
-        # TODO: get private version of the data
-        App.User.find(userId)
-        .then (currentUser) ->
+        App.User.find
+          id: json.user.id
+          access: 'private'
+        .then (currentUsers) ->
+          currentUser = currentUsers.get(0)
           console.log "Authenticated as '#{currentUser.id}'"
           controller.set 'currentUser', currentUser
           controller.set 'isAuthenticated', true
