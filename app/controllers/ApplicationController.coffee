@@ -1,7 +1,10 @@
 App = require 'app'
 
-module.exports = App.ApplicationController = Em.Controller.extend
-  isAuthenticated: false
+module.exports = App.ApplicationController = App.AuthenticatedController.extend
+  needs: ['authentication']
+
+  initAuth: ->
+    @get('controllers.authentication').initAuth()
 
   login: ->
     navigator.id.request()

@@ -29,6 +29,8 @@ require 'models/Exp'
 
 
 # ===== Controllers =====
+require 'controllers/AuthenticationController'
+require 'controllers/AuthenticatedController'
 require 'controllers/ApplicationController'
 
 
