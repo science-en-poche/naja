@@ -17,7 +17,6 @@ module.exports = App.ApplicationRoute = Em.Route.extend
         alert 'Login failure: ' + err
 
   onLogout: ->
-    console.log 'onLogout'
     Em.$.ajax
       url: App.CONFIG.logoutUrl
       type: 'POST'
