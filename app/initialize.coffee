@@ -30,9 +30,13 @@ require 'models/Exp'
 
 # ===== Controllers =====
 require 'controllers/AuthenticationController'
+require 'controllers/AuthenticatedMixin'
 require 'controllers/AuthenticatedController'
+require 'controllers/AuthenticatedObjectController'
+require 'controllers/AuthenticatedArrayController'
 require 'controllers/ApplicationController'
 require 'controllers/HeaderController'
+require 'controllers/UserExpController'
 
 
 # ===== Template Helpers =====
