@@ -5,9 +5,3 @@ module.exports = App.ApplicationController = App.AuthenticatedController.extend
 
   initAuth: ->
     @get('controllers.authentication').initAuth()
-
-  login: ->
-    navigator.id.request()
-
-  logout: ->
-    navigator.id.logout()

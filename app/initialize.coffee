@@ -32,6 +32,7 @@ require 'models/Exp'
 require 'controllers/AuthenticationController'
 require 'controllers/AuthenticatedController'
 require 'controllers/ApplicationController'
+require 'controllers/HeaderController'
 
 
 # ===== Template Helpers =====
