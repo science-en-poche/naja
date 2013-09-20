@@ -4,7 +4,7 @@ module.exports = App.ApplicationController = Em.Controller.extend
   isAuthenticated: false
 
   login: ->
-    @set 'isAuthenticated', true
+    navigator.id.request()
 
   logout: ->
-    @set 'isAuthenticated', false
+    navigator.id.logout()

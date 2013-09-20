@@ -1,27 +1,63 @@
 App = require 'app'
 
 module.exports = App.ApplicationRoute = Em.Route.extend
+  onLogin: (assertion) ->
+    Em.$.ajax
+      url: App.CONFIG.loginUrl
+      type: 'POST'
+      xhrFields:
+        withCredentials: true
+      data:
+        assertion: assertion
+      success: (res, status, xhr) ->
+        console.log 'Logged in, reloading...'
+        window.location.reload()
+      error: (xhr, status, err) ->
+        navigator.id.logout()
+        alert 'Login failure: ' + err
+
+  onLogout: ->
+    console.log 'onLogout'
+    Em.$.ajax
+      url: App.CONFIG.logoutUrl
+      type: 'POST'
+      xhrFields:
+        withCredentials: true
+      success: (res, status, xhr) ->
+        console.log 'Logged out, reloading...'
+        window.location.reload()
+      error: (xhr, status, err) ->
+        alert 'Logout failure: ' + err
+
+  personaWatch: ->
+    currentUser = @controllerFor('application').get 'currentUser'
+    navigator.id.watch
+      loggedInUser: currentUser?.get('personaEmail') || null
+      onlogin: @onLogin
+      onlogout: @onLogout
+
   setupController: (controller, model) ->
-    # Try to catch a 401 (TODO: clean)
-    hash =
-      url: App.CONFIG.authUrl
+    Em.$.ajax
+      url: App.CONFIG.meUrl
       type: 'GET'
+      xhrFields:
+        withCredentials: true
       dataType: 'json'
       contentType: 'application/json; charset=utf-8'
-      success: (json) ->
+      success: (res, status, xhr) =>
         App.User.find
-          id: json.user.id
+          ids: [res.user.id]
           access: 'private'
-        .then (currentUsers) ->
-          currentUser = currentUsers.get(0)
-          console.log "Authenticated as '#{currentUser.id}'"
+        .then (currentUsers) =>
+          currentUser = currentUsers.objectAt(0)
+          console.log "Cookie authenticates as '#{currentUser.id}'"
           controller.set 'currentUser', currentUser
           controller.set 'isAuthenticated', true
-      error: (response) ->
-        if response.status == 401
-          console.log 'Unauthenticated'
+          @personaWatch()
+      error: (xhr, status, err) =>
+        if xhr.status == 401
+          console.log 'Cookie does not authenticate'
           controller.set 'isAuthenticated', false
+          @personaWatch()
         else
           alert 'Something went wrong'
-
-    Em.$.ajax(hash)
