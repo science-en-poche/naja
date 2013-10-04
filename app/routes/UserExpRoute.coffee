@@ -8,4 +8,4 @@ module.exports = App.UserExpRoute = Em.Route.extend
     App.Exp.find(exp_id)
 
   serialize: (model) ->
-    {exp_name: model.get('name')}
+    exp_name: model.get('name')
