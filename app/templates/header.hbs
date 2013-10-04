@@ -1,24 +1,18 @@
-<div class="navbar navbar-inverse navbar-fixed-top">
-  <div class="navbar-inner">
-    <div class="container">
-      <div class="pull-right">
-      {{#if isAuthenticated}}
-        <ul class="nav">
-          <li>{{#linkTo 'user' currentUser}}{{gravatar-img currentUser class="img-rounded" size=24}} {{currentUser.id}}{{/linkTo}}</li>
-          <li><a href="#"><i class="icon-plus-sign icon-white"></i> new exp</a></li>
-          <li><a href="#"><i class="icon-cog icon-white"></i> settings</a></li>
-          <li><a {{action logout}} href="#"><i class="icon-off icon-white"></i> logout</a></li>
-        </ul>
-      {{else}}
-        <div class="persona">
-          <a {{action login}} href="#"><img src="img/email_sign_in_blue.png"></a>
-        </div>
-      {{/if}}
-      </div>
-      {{#linkTo 'index' class='brand'}}Naja{{/linkTo}}
-      <ul class="nav">
-        <li>{{#linkTo 'about'}}About{{/linkTo}}</li>
-      </ul>
-    </div>
+<div class="pull-right">
+{{#if isAuthenticated}}
+  <ul class="nav">
+    <li>{{#linkTo 'user' currentUser}}{{gravatar-img currentUser class="img-rounded" size=24}} {{currentUser.id}}{{/linkTo}}</li>
+    <li><a href="#"><i class="icon-plus-sign icon-white"></i> new exp</a></li>
+    <li><a href="#"><i class="icon-cog icon-white"></i> settings</a></li>
+    <li><a {{action logout}} href="#"><i class="icon-off icon-white"></i> logout</a></li>
+  </ul>
+{{else}}
+  <div class="persona">
+    <a {{action login}} href="#"><img src="img/email_sign_in_blue.png"></a>
   </div>
+{{/if}}
 </div>
+{{#linkTo 'index' class='brand'}}Naja{{/linkTo}}
+<ul class="nav">
+  <li>{{#linkTo 'about'}}About{{/linkTo}}</li>
+</ul>
