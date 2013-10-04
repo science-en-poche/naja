@@ -2,5 +2,5 @@ App = require 'app'
 
 module.exports = App.IndexRoute = Ember.Route.extend
   setupController: (controller, model) ->
-    controller.set('users', App.User.find())
-    controller.set('exps', App.Exp.find())
+    controller.set 'users', App.User.find()
+    controller.set 'exps', App.Exp.find()
