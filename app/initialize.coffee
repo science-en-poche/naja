@@ -23,6 +23,9 @@ require 'store'
 # ===== Models =====
 require 'models/User'
 require 'models/Exp'
+require 'models/Device'
+require 'models/Profile'
+require 'models/Result'
 
 
 # ===== Views =====
