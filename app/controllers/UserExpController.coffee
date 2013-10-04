@@ -7,4 +7,4 @@ module.exports = App.UserExpController = App.AuthenticatedObjectController.exten
     collabAuth = currentId in @get('model.collaborators').map (collaborator) ->
       collaborator.id
     ownerAuth or collabAuth
-  ).property('currentUser', 'model.id', 'model.collaborators')
+  ).property('currentUser', 'model.owner.id', 'model.collaborators')
