@@ -1,7 +1,7 @@
 App = require 'app'
 
 module.exports = App.Result = DS.Model.extend
-  data: DS.attr 'string'  # FIXME: see if this works to store arbitrary data
+  resultData: DS.attr 'object'
   profile: DS.belongsTo 'App.Profile'
   exp: DS.belongsTo 'App.Exp'
-  createdAt: DS.attr 'date'  # FIXME: see if this works to store a date
+  createdAt: DS.attr 'date'
