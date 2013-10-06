@@ -28,6 +28,7 @@ exports.config =
           'vendor/scripts/ember-latest.js'
           'vendor/scripts/ember-data-latest.js'
           'vendor/scripts/bootstrap/bootstrap-tooltip.js'
+          'vendor/scripts/moment+langs.js'
           ]
         after: [
           'vendor/scripts/ember-bootstrap-latest.js'

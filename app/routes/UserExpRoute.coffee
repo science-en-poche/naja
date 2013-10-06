@@ -9,3 +9,6 @@ module.exports = App.UserExpRoute = Em.Route.extend
 
   serialize: (model) ->
     exp_name: model.get('name')
+
+  afterModel: (model) ->
+    @transitionTo 'user.exp.results'

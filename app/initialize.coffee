@@ -47,6 +47,9 @@ require 'controllers/UserExpController'
 require 'helpers/gravatar-img'
 require 'helpers/exp-img'
 require 'helpers/plural'
+require 'helpers/result'
+require 'helpers/profile'
+require 'helpers/date'
 
 
 # ===== Templates =====

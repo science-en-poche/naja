@@ -13,7 +13,10 @@ adapter.registerTransform 'object',
   serialize: (value) ->
     value
   deserialize: (value) ->
-    Ember.create(value)
+    if value
+      Ember.create(value)
+    else
+      null
 
 module.exports = App.Store = DS.Store.extend
   revision: 12
