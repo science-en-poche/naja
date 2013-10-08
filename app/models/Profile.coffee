@@ -1,5 +1,3 @@
-App = require 'app'
-
 module.exports = App.Profile = DS.Model.extend
   profileData: DS.attr 'object'
   device: DS.belongsTo 'App.Device'

@@ -1,5 +1,3 @@
-App = require 'app'
-
 adapter =  DS.RESTAdapter.extend
   url: App.CONFIG.api.url
   namespace: App.CONFIG.api.version

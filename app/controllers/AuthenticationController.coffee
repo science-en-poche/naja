@@ -1,5 +1,3 @@
-App = require 'app'
-
 module.exports = App.AuthenticationController = Em.Controller.extend
   login: ->
     navigator.id.request()

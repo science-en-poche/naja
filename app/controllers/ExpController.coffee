@@ -1,5 +1,3 @@
-App = require 'app'
-
 module.exports = App.ExpController = Em.ObjectController.extend App.AuthenticatedControllerMixin,
   currentUserHasAccess: (->
     currentId = @get('currentUser.id')

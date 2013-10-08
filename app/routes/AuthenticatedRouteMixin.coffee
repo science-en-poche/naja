@@ -1,5 +1,3 @@
-App = require 'app'
-
 module.exports = App.AuthenticatedRouteMixin = Em.Mixin.create
   currentUser: ((key, value) ->
     authenticationController = @controllerFor 'authentication'

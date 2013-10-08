@@ -1,5 +1,3 @@
-App = require 'app'
-
 module.exports = App.ExpRoute = Em.Route.extend App.AuthenticatedRouteMixin,
   model: (params) ->
     owner = App.User.find(params.owner_id)

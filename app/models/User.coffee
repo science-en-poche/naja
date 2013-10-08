@@ -1,5 +1,3 @@
-App = require 'app'
-
 module.exports = App.User = DS.Model.extend
   exps: DS.hasMany 'App.Exp'
   gravatarId: DS.attr 'string'

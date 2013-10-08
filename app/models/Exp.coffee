@@ -1,5 +1,3 @@
-App = require 'app'
-
 module.exports = App.Exp = DS.Model.extend
   collaborators: DS.hasMany 'App.User'
   description: DS.attr 'string'

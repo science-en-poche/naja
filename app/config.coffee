@@ -1,5 +1,3 @@
-App = require 'app'
-
 # linkTo and action handlebars helpers are looked up if not quoted
 Ember.ENV.HELPER_PARAM_LOOKUPS = yes
 
