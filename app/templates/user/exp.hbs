@@ -11,7 +11,11 @@
     <div class="offset2 span8">
       <h2>Oops!</h2>
       <hr>
-      <p>You don't have access to this page... did you forget to log in? Or you're not working with {{#linkTo 'user' owner}}{{owner.id}}{{/linkTo}} on this experiment.</p>
+      {{#if isAuthenticated}}
+        <p>You don't have access to this page... you're not working with {{#linkTo 'user' owner}}{{owner.id}}{{/linkTo}} on this experiment.</p>
+      {{else}}
+        <p>You don't have access to this page... did you forget to log in?</p>
+      {{/if}}
     </div>
   {{/if}}
 </div>

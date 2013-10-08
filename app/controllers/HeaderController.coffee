@@ -1,6 +1,6 @@
 App = require 'app'
 
-module.exports = App.HeaderController = App.AuthenticatedController.extend
+module.exports = App.HeaderController = Em.Controller.extend App.AuthenticatedControllerMixin,
   login: ->
     navigator.id.request()
 

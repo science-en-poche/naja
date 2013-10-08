@@ -1,8 +1,6 @@
 App = require 'app'
 
 module.exports = App.AuthenticationController = Em.Controller.extend
-  isAuthenticated: false
-
   login: ->
     navigator.id.request()
 
@@ -36,34 +34,38 @@ module.exports = App.AuthenticationController = Em.Controller.extend
       error: (xhr, status, err) ->
         alert 'Logout failure: ' + err
 
-  personaWatch: ->
+  personaWatch: (currentUser) ->
     navigator.id.watch
-      loggedInUser: @currentUser?.get('personaEmail') || null
+      loggedInUser: currentUser?.get('personaEmail') or null
       onlogin: @onLogin
       onlogout: @onLogout
 
-  initAuth: ->
-    Em.$.ajax
-      url: App.CONFIG.meUrl
-      type: 'GET'
-      xhrFields:
-        withCredentials: true
-      dataType: 'json'
-      contentType: 'application/json; charset=utf-8'
-      success: (res, status, xhr) =>
-        App.User.find
-          ids: [res.user.id]
-          access: 'private'
-        .then (currentUsers) =>
-          currentUser = currentUsers.objectAt(0)
-          console.log "Cookie authenticates as '#{currentUser.id}'"
-          @set 'currentUser', currentUser
-          @set 'isAuthenticated', true
-          @personaWatch()
-      error: (xhr, status, err) =>
-        if xhr.status == 401
-          console.log 'Cookie does not authenticate'
-          @set 'isAuthenticated', false
-          @personaWatch()
-        else
-          alert 'Something went wrong'
+  resolveCurrentUser: ->
+    @currentUserPromise ||= Em.RSVP.Promise (resolve, reject) ->
+      Em.$.ajax
+        url: App.CONFIG.meUrl
+        type: 'GET'
+        xhrFields:
+          withCredentials: true
+        dataType: 'json'
+        contentType: 'application/json; charset=utf-8'
+        success: (res, status, xhr) =>
+          App.User.find
+            ids: [res.user.id]
+            access: 'private'
+          .then (currentUsers) =>
+            currentUser = currentUsers.objectAt(0)
+            resolve(currentUser)
+        error: (xhr, status, err) =>
+          if xhr.status == 401
+            resolve(null)
+          else
+            reject('Something went wrong')
+            alert('Something went wrong')
+    .then (currentUser) =>
+      @set('currentUser', currentUser)
+      @personaWatch(currentUser)
+      if currentUser
+        console.log "Cookie authenticates as '#{currentUser.id}'"
+      else
+        console.log 'Cookie does not authenticate'

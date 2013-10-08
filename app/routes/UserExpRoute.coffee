@@ -1,6 +1,6 @@
 App = require 'app'
 
-module.exports = App.UserExpRoute = Em.Route.extend
+module.exports = App.UserExpRoute = Em.Route.extend App.AuthenticatedRouteMixin,
   model: (params) ->
     user = @modelFor('user')
     hash = CryptoJS.SHA256("#{user.id}/#{params.exp_name}")

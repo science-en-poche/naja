@@ -10,6 +10,7 @@ require 'router'
 
 
 # ===== Routes =====
+require 'routes/AuthenticatedRouteMixin'
 require 'routes/ApplicationRoute'
 require 'routes/IndexRoute'
 require 'routes/UserIndexRoute'
@@ -34,11 +35,7 @@ require 'models/Result'
 
 # ===== Controllers =====
 require 'controllers/AuthenticationController'
-require 'controllers/AuthenticatedMixin'
-require 'controllers/AuthenticatedController'
-require 'controllers/AuthenticatedObjectController'
-require 'controllers/AuthenticatedArrayController'
-require 'controllers/ApplicationController'
+require 'controllers/AuthenticatedControllerMixin'
 require 'controllers/HeaderController'
 require 'controllers/UserExpController'
 

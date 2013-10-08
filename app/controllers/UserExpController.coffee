@@ -1,6 +1,6 @@
 App = require 'app'
 
-module.exports = App.UserExpController = App.AuthenticatedObjectController.extend
+module.exports = App.UserExpController = Em.ObjectController.extend App.AuthenticatedControllerMixin,
   currentUserHasAccess: (->
     currentId = @get('currentUser.id')
     ownerAuth = currentId == @get('model.owner.id')

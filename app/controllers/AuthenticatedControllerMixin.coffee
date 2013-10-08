@@ -1,24 +1,26 @@
 App = require 'app'
 
-module.exports = App.AuthenticatedMixin = Em.Mixin.create
+module.exports = App.AuthenticatedControllerMixin = Em.Mixin.create
   needs: ['authentication']
 
   currentUser: ((key, value) ->
     authenticationController = @get 'controllers.authentication'
+
     # Setter
     if arguments.length > 1
-      authenticationController.set 'currentUser', value
+      throw new Error("Can't set 'currentUser' manually")
 
     # Getter
-    authenticationController.get 'currentUser'
+    authenticationController.get('currentUser')
   ).property('controllers.authentication.currentUser')
 
   isAuthenticated: ((key, value) ->
     authenticationController = @get 'controllers.authentication'
+
     # Setter
     if arguments.length > 1
-      authenticationController.set 'isAuthenticated', value
+      throw new Error("Can't set 'isAuthenticated' manually")
 
     # Getter
-    authenticationController.get 'isAuthenticated'
-  ).property('controllers.authentication.isAuthenticated')
+    authenticationController.get('currentUser')?
+  ).property('controllers.authentication.currentUser')
