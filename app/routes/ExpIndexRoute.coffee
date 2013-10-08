@@ -1,6 +1,6 @@
 App = require 'app'
 
-module.exports = App.ExpResultsRoute = Em.Route.extend App.AuthenticatedRouteMixin,
+module.exports = App.ExpIndexRoute = Em.Route.extend App.AuthenticatedRouteMixin,
   model: (params) ->
     if @get('isAuthenticated')
       exp = @modelFor('exp')

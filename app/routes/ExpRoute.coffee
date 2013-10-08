@@ -10,6 +10,3 @@ module.exports = App.ExpRoute = Em.Route.extend App.AuthenticatedRouteMixin,
   serialize: (model) ->
     owner_id: model.get('owner.id')
     exp_name: model.get('name')
-
-  afterModel: (model) ->
-    @transitionTo 'exp.results'
