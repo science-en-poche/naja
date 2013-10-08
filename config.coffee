@@ -1,15 +1,7 @@
 sysPath = require 'path'
 fs      = require 'fs'
 
-#TODO: find a method to do this in a cleaner way
-gitHead = -> fs.readFileSync(sysPath.join('.git', 'HEAD')).toString().replace(/^\s*ref\:\s*/g, '').replace(/\s*$/g, '')
-gitBranch = ->
-  head = gitHead().split /\//g
-  branch = head.slice()
-  branch.shift()
-  branch.shift()
-  branch.join '/'
-gitCommitHash = -> fs.readFileSync(sysPath.join('.git', gitHead().split(/\//g).join(sysPath.sep))).toString().replace(/^\s*/g, '').replace(/\s*$/g, '')
+mode = process.env['MODE'] or 'dev'
 
 exports.config =
   # See http://brunch.io/#documentation for documentation.
@@ -28,13 +20,13 @@ exports.config =
           'vendor/scripts/ember-latest.js'
           'vendor/scripts/ember-data-latest.js'
           'vendor/scripts/bootstrap/bootstrap-tooltip.js'
-          'vendor/scripts/moment+langs.js'
           ]
         after: [
           'vendor/scripts/ember-bootstrap-latest.js'
           'vendor/scripts/crypto-js-3.1.2/rollups/sha256.js'
           'vendor/scripts/crypto-js-3.1.2/components/enc-base64-min.js'
           'vendor/scripts/persona.js'
+          'vendor/scripts/moment+langs.js'
         ]
 
     stylesheets:
@@ -58,9 +50,7 @@ exports.config =
   # keyword-brunch plugin
   keyword:
     map:
-      git_commit_hash: gitCommitHash
-      git_short_commit_hash: -> gitCommitHash().substr 0, 7
-      git_branch: gitBranch
+      mode: mode
 
   # allow _ prefixed templates so partials work
   conventions:
