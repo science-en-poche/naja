@@ -37,6 +37,7 @@ require 'models/Result'
 require 'controllers/AuthenticationController'
 require 'controllers/AuthenticatedControllerMixin'
 require 'controllers/HeaderController'
+require 'controllers/UserIndexController'
 require 'controllers/ExpController'
 
 
