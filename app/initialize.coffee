@@ -14,8 +14,8 @@ require 'routes/AuthenticatedRouteMixin'
 require 'routes/ApplicationRoute'
 require 'routes/IndexRoute'
 require 'routes/UserIndexRoute'
-require 'routes/UserExpRoute'
-require 'routes/UserExpResultsRoute'
+require 'routes/ExpRoute'
+require 'routes/ExpResultsRoute'
 
 
 # ===== Store =====
@@ -37,7 +37,7 @@ require 'models/Result'
 require 'controllers/AuthenticationController'
 require 'controllers/AuthenticatedControllerMixin'
 require 'controllers/HeaderController'
-require 'controllers/UserExpController'
+require 'controllers/ExpController'
 
 
 # ===== Template Helpers =====
@@ -58,6 +58,6 @@ require 'templates/index/exps'
 require 'templates/about'
 require 'templates/user'
 require 'templates/user/index'
-require 'templates/user/exp'
-require 'templates/user/exp/index'
-require 'templates/user/exp/results'
+require 'templates/exp'
+require 'templates/exp/index'
+require 'templates/exp/results'

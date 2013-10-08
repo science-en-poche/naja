@@ -2,9 +2,9 @@
 <ul class="media-list">
   {{#each exps}}
   <li class="media">
-    {{#linkTo 'user.exp' owner this class=pull-left}}{{exp-img this class=img-rounded}}{{/linkTo}}
+    {{#linkTo 'exp' this class=pull-left}}{{exp-img this class=img-rounded}}{{/linkTo}}
     <div class="media-body">
-      <h4 class="media-heading">{{#linkTo 'user.exp' owner this}}{{name}}{{/linkTo}} <small>by {{owner.id}}</small></h4>
+      <h4 class="media-heading">{{#linkTo 'exp' this}}{{name}}{{/linkTo}} <small>by {{owner.id}}</small></h4>
       <h4><small>{{plural nProfiles word=profile}}, {{plural nResults word=result}}</small></h4>
     </div>
   </li>
