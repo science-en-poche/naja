@@ -14,8 +14,8 @@ require 'routes/AuthenticatedRouteMixin'
 require 'routes/ApplicationRoute'
 require 'routes/IndexRoute'
 require 'routes/UserIndexRoute'
-require 'routes/UserExpRoute'
-require 'routes/UserExpResultsRoute'
+require 'routes/ExpRoute'
+require 'routes/ExpIndexRoute'
 
 
 # ===== Store =====
@@ -31,13 +31,18 @@ require 'models/Result'
 
 
 # ===== Views =====
+require 'views/FromNowView'
 
 
 # ===== Controllers =====
 require 'controllers/AuthenticationController'
 require 'controllers/AuthenticatedControllerMixin'
 require 'controllers/HeaderController'
-require 'controllers/UserExpController'
+require 'controllers/IndexUsersController'
+require 'controllers/IndexExpsController'
+require 'controllers/UserIndexController'
+require 'controllers/ExpController'
+require 'controllers/ExpIndexController'
 
 
 # ===== Template Helpers =====
@@ -46,7 +51,7 @@ require 'helpers/exp-img'
 require 'helpers/plural'
 require 'helpers/result'
 require 'helpers/profile'
-require 'helpers/date'
+require 'helpers/fromNow'
 
 
 # ===== Templates =====
@@ -58,6 +63,6 @@ require 'templates/index/exps'
 require 'templates/about'
 require 'templates/user'
 require 'templates/user/index'
-require 'templates/user/exp'
-require 'templates/user/exp/index'
-require 'templates/user/exp/results'
+require 'templates/exp'
+require 'templates/exp/index'
+require 'templates/fromNow'

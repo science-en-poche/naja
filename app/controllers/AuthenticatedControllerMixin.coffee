@@ -1,5 +1,3 @@
-App = require 'app'
-
 module.exports = App.AuthenticatedControllerMixin = Em.Mixin.create
   needs: ['authentication']
 

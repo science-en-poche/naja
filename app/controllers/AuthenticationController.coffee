@@ -1,5 +1,3 @@
-App = require 'app'
-
 module.exports = App.AuthenticationController = Em.Controller.extend
   login: ->
     navigator.id.request()
@@ -41,7 +39,7 @@ module.exports = App.AuthenticationController = Em.Controller.extend
       onlogout: @onLogout
 
   resolveCurrentUser: ->
-    @currentUserPromise ||= Em.RSVP.Promise (resolve, reject) ->
+    currentUserPromise = @get('currentUserPromise') or Em.RSVP.Promise (resolve, reject) ->
       Em.$.ajax
         url: App.CONFIG.meUrl
         type: 'GET'
@@ -69,3 +67,5 @@ module.exports = App.AuthenticationController = Em.Controller.extend
         console.log "Cookie authenticates as '#{currentUser.id}'"
       else
         console.log 'Cookie does not authenticate'
+    @set 'currentUserPromise', currentUserPromise
+    currentUserPromise

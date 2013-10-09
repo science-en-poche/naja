@@ -1,1 +1,12 @@
-{{outlet}}
+<div class="row-fluid">
+  <div class="offset2 span2">
+    {{gravatar-img this class="img-polaroid" size=212}}
+    <hr>
+    {{plural exps.length word=experiment}}, {{plural nProfiles word=profile}}, {{plural nResults word=result}}
+  </div>
+  <div class="span6">
+    <h1>{{id}}'s experiments</h1>
+    <hr>
+    {{outlet}}
+  </div>
+</div>

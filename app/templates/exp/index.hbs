@@ -10,11 +10,11 @@
       </tr>
     </thead>
     <tbody>
-      {{#each model}}
+      {{#each arrangedContent}}
         <tr>
           <td>{{result this}}</td>
           <td>{{profile this.profile}}</td>
-          <td>{{date createdAt}}</td>
+          <td>{{fromNow valueBinding='createdAt'}}</td>
         </tr>
       {{/each}}
     </tbody>
