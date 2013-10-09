@@ -7,7 +7,7 @@ module.exports = App.FromNowView = Ember.View.extend
       console.log 'tick'
       @notifyPropertyChange 'value'
       @tick()
-    , 1000
+    , 55 * 1000
     @set 'nextTick', nextTick
 
   didInsertElement: ->
