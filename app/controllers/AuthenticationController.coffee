@@ -39,8 +39,7 @@ module.exports = App.AuthenticationController = Em.Controller.extend
       onlogout: @onLogout
 
   resolveCurrentUser: ->
-    currentUserPromise = @get('currentUserPromise')
-    currentUserPromise ||= Em.RSVP.Promise (resolve, reject) ->
+    currentUserPromise = @get('currentUserPromise') or Em.RSVP.Promise (resolve, reject) ->
       Em.$.ajax
         url: App.CONFIG.meUrl
         type: 'GET'
