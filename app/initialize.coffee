@@ -31,6 +31,7 @@ require 'models/Result'
 
 
 # ===== Views =====
+require 'views/FromNowView'
 
 
 # ===== Controllers =====
@@ -50,7 +51,7 @@ require 'helpers/exp-img'
 require 'helpers/plural'
 require 'helpers/result'
 require 'helpers/profile'
-require 'helpers/date'
+require 'helpers/fromNow'
 
 
 # ===== Templates =====
@@ -64,3 +65,4 @@ require 'templates/user'
 require 'templates/user/index'
 require 'templates/exp'
 require 'templates/exp/index'
+require 'templates/fromNow'
