@@ -1,6 +1,6 @@
-// Version: 01c440e23a4772f5caabe9d8e27e0b6ac9b35c6c-16-g4297f63
-// Last commit: 4297f63 (2013-08-19 08:30:46 -0700)
-var Bootstrap = Ember.Namespace.create();
+// Version: v0.0.2-22-g2410c9e
+// Last commit: 2410c9e (2013-07-29 14:31:26 +0200)
+
 
 (function() {
 var define, requireModule;
@@ -42,7 +42,7 @@ var define, requireModule;
   };
 })();
 (function() {
-window.Bootstrap = Bootstrap;
+window.Bootstrap = Ember.Namespace.create();
 
 })();
 
@@ -53,7 +53,7 @@ var get = Ember.get;
 
 var modalPaneTemplate = [
 '<div class="modal-header">',
-'  {{#if view.showCloseButton}}<a href="#" class="close" rel="close">&times;</a>{{/if}}',
+'  <a href="#" class="close" rel="close">&times;</a>',
 '  {{view view.headerViewClass}}',
 '</div>',
 '<div class="modal-body">{{view view.bodyViewClass}}</div>',
@@ -74,10 +74,7 @@ Bootstrap.ModalPane = Ember.View.extend(Ember.DeferredMixin, {
   message: null,
   primary: null,
   secondary: null,
-  animateBackdropIn: null,
-  animateBackdropOut: null,
   showBackdrop: true,
-  showCloseButton: true,
   headerViewClass: Ember.View.extend({
     tagName: 'h3',
     template: Ember.Handlebars.compile('{{view.parentView.heading}}')
@@ -96,7 +93,7 @@ Bootstrap.ModalPane = Ember.View.extend(Ember.DeferredMixin, {
   },
 
   willDestroyElement: function() {
-    if (this._backdrop) this._removeBackdrop();
+    if (this._backdrop) this._backdrop.remove();
     this._removeDocumentKeyHandler();
   },
 
@@ -120,22 +117,8 @@ Bootstrap.ModalPane = Ember.View.extend(Ember.DeferredMixin, {
   },
 
   _appendBackdrop: function() {
-    var parentLayer = this.$().parent(),
-        animateIn = this.get("animateBackdropIn");
+    var parentLayer = this.$().parent();
     this._backdrop = jQuery(modalPaneBackdrop).appendTo(parentLayer);
-    if (animateIn) this._backdrop.addClass("hide")[animateIn.method](animateIn.options);
-  },
-
-  _removeBackdrop: function() {
-    var animateOut = this.get("animateBackdropOut"),
-        _this = this;
-
-    if (animateOut) {
-      animateOut.options = jQuery.extend({always: function(){ _this._backdrop.remove();}}, animateOut.options);
-      this._backdrop[animateOut.method](animateOut.options);
-    } else {
-      this._backdrop.remove();
-    }
   },
 
   _setupDocumentKeyHandler: function() {
@@ -735,14 +718,16 @@ Bootstrap.Forms = Ember.Namespace.create({
 (function() {
 Bootstrap.Forms.Field = Ember.View.extend({
   tagName: 'div',
-  classNameBindings: ['form-group'],
+  classNames: ['control-group'],
   labelCache: undefined,
   help: undefined,
   template: Ember.Handlebars.compile([
     '{{view view.labelView viewName="labelView"}}',
-    '{{view view.inputField viewName="inputField"}}',
-    '{{view view.errorsView}}',
-    '{{view view.helpView}}'].join("\n")),
+    '<div class="controls">',
+    '  {{view view.inputField viewName="inputField"}}',
+    '  {{view view.errorsView}}',
+    '  {{view view.helpView}}',
+    '</div>'].join("\n")),
 
   label: Ember.computed(function(key, value) {
     if(arguments.length === 1){
@@ -789,7 +774,7 @@ Bootstrap.Forms.Field = Ember.View.extend({
   }),
 
   inputField: Ember.View.extend({
-    classNames: ['ember-bootstrap-extend', 'form-control'],
+    classNames: ['ember-bootstrap-extend'],
     tagName: 'div',
     template: Ember.Handlebars.compile('This class is not meant to be used directly, but extended.')
   }),
@@ -819,14 +804,14 @@ Bootstrap.Forms.Field = Ember.View.extend({
           var errors = object.get('errors');
 
           if (errors && fieldName in errors && !Ember.isEmpty(errors[fieldName])) {
-            parent.$().addClass('has-error');
+            parent.$().addClass('error');
             this.$().html(errors[fieldName].join(', '));
           } else {
-            parent.$().removeClass('has-error');
+            parent.$().removeClass('error');
             this.$().html('');
           }
         } else {
-          parent.$().removeClass('has-error');
+          parent.$().removeClass('error');
           this.$().html('');
         }
       }
@@ -885,7 +870,6 @@ Bootstrap.TextSupport = Ember.Mixin.create({
   disabledBinding: 'parentView.disabled',
   maxlengthBinding: 'parentView.maxlength',
   classNameBindings: 'parentView.inputClassNames',
-  classNames: ['form-control'],
   attributeBindings: ['name'],
   name: Ember.computed(function() {
     return get(this, 'parentView.name') || get(this, 'parentView.label');
